@@ -1,0 +1,33 @@
+# Android/Gradle build outputs
+.gradle/
+build/
+**/build/
+release/
+app/release/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+
+# Local SDK/NDK path
+local.properties
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+out/
+
+# Signing and secrets
+*.jks
+*.keystore
+keystore.properties
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

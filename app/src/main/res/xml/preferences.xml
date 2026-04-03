@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <EditTextPreference
+        android:key="port"
+        android:title="@string/pref_port_title"
+        android:defaultValue="8080"
+        app:useSimpleSummaryProvider="true" />
+
+    <SwitchPreferenceCompat
+        android:key="anonymous_access"
+        android:title="@string/pref_anon_title"
+        android:defaultValue="true" />
+
+    <EditTextPreference
+        android:key="user_id"
+        android:title="@string/pref_user_title"
+        app:useSimpleSummaryProvider="true" />
+
+    <EditTextPreference
+        android:key="password"
+        android:title="@string/pref_password_title"
+        android:summary="********" />
+
+    <SwitchPreferenceCompat
+        android:key="use_ssl"
+        android:title="@string/pref_ssl_title"
+        android:defaultValue="false" />
+
+    <Preference
+        android:key="root_folder"
+        android:title="@string/pref_root_title"
+        android:summary="@string/folder_not_selected" />
+
+    <ListPreference
+        android:key="theme_mode"
+        android:title="@string/pref_theme_title"
+        android:defaultValue="system"
+        android:entries="@array/theme_entries"
+        android:entryValues="@array/theme_values"
+        app:useSimpleSummaryProvider="true" />
+
+    <SwitchPreferenceCompat
+        android:key="read_only_fileserver"
+        android:title="@string/pref_read_only_title"
+        android:defaultValue="false" />
+
+    <SwitchPreferenceCompat
+        android:key="allow_uploads"
+        android:title="@string/pref_upload_title"
+        android:defaultValue="true" />
+
+    <SwitchPreferenceCompat
+        android:key="allow_zip"
+        android:title="@string/pref_zip_title"
+        android:summary="ZIP downloads are CPU-intensive on large directories."
+        android:defaultValue="false" />
+
+    <SwitchPreferenceCompat
+        android:key="show_hidden"
+        android:title="@string/pref_hidden_title"
+        android:defaultValue="false" />
+
+    <SeekBarPreference
+        android:key="max_connections"
+        android:title="@string/pref_connections_title"
+        android:defaultValue="10"
+        android:min="1"
+        android:max="50"
+        app:showSeekBarValue="true" />
+
+    <ListPreference
+        android:key="max_speed"
+        android:title="@string/pref_speed_title"
+        android:defaultValue="off"
+        android:entries="@array/speed_entries"
+        android:entryValues="@array/speed_values"
+        app:useSimpleSummaryProvider="true" />
+</PreferenceScreen>

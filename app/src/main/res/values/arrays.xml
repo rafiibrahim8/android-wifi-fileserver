@@ -1,0 +1,27 @@
+<resources>
+    <string-array name="theme_entries">
+        <item>System</item>
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="theme_values">
+        <item>system</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+
+    <string-array name="speed_entries">
+        <item>Off</item>
+        <item>1 MB/s</item>
+        <item>5 MB/s</item>
+        <item>10 MB/s</item>
+        <item>Unlimited</item>
+    </string-array>
+    <string-array name="speed_values">
+        <item>off</item>
+        <item>1m</item>
+        <item>5m</item>
+        <item>10m</item>
+        <item>unlimited</item>
+    </string-array>
+</resources>

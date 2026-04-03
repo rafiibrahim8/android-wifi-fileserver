@@ -1,0 +1,13 @@
+<resources>
+    <style name="Theme.WiFiFileShare" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/on_primary_dark</item>
+        <item name="colorSurface">@color/surface_dark</item>
+        <item name="android:navigationBarColor">@color/surface_dark</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.WiFiFileShare.Large</item>
+    </style>
+
+    <style name="ShapeAppearance.WiFiFileShare.Large" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerSize">24dp</item>
+    </style>
+</resources>

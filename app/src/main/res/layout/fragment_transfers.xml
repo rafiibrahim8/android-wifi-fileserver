@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/filter_chips"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:singleSelection="true">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/all" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_downloads"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/downloads" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_uploads"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/uploads" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_completed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/completed" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_failed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/failed" />
+    </com.google.android.material.chip.ChipGroup>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/transfers_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingTop="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/clear_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Clear all" />
+
+</LinearLayout>

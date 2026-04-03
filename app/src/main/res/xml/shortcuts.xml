@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="start_server"
+        android:enabled="true"
+        android:icon="@android:drawable/ic_menu_upload"
+        android:shortcutShortLabel="@string/shortcut_start_server"
+        android:shortcutLongLabel="@string/shortcut_start_server_long">
+        <intent
+            android:action="me.ibrahimrafi.wififileshare.action.START_SHORTCUT"
+            android:targetClass="me.ibrahimrafi.wififileshare.MainActivity"
+            android:targetPackage="me.ibrahimrafi.wififileshare" />
+    </shortcut>
+</shortcuts>
