@@ -22,7 +22,8 @@ class ServerPreferences(context: Context) {
     )
 
     fun getConfig(): ServerConfig {
-        val port = prefs.getString(KEY_PORT, "8080")?.toIntOrNull()?.coerceIn(1024, 65535) ?: 8080
+        val defaultPort = ServerConfig.DEFAULT_PORT
+        val port = prefs.getString(KEY_PORT, defaultPort.toString())?.toIntOrNull()?.coerceIn(1024, 65535) ?: defaultPort
         val rootUri = prefs.getString(KEY_ROOT_URI, null)?.let(Uri::parse)
         return ServerConfig(
             port = port,

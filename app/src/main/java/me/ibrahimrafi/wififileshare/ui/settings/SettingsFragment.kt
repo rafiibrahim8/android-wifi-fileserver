@@ -11,6 +11,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import me.ibrahimrafi.wififileshare.R
+import me.ibrahimrafi.wififileshare.model.ServerConfig
 import me.ibrahimrafi.wififileshare.storage.FolderAccessManager
 import me.ibrahimrafi.wififileshare.storage.ServerPreferences
 
@@ -38,6 +39,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun setupPortValidation() {
         val portPref = findPreference<EditTextPreference>(ServerPreferences.KEY_PORT) ?: return
+        if (portPref.text.isNullOrBlank()) {
+            portPref.text = ServerConfig.DEFAULT_PORT.toString()
+        }
         portPref.setOnPreferenceChangeListener { _, newValue ->
             val port = (newValue as? String)?.toIntOrNull()
             port != null && port in 1024..65535

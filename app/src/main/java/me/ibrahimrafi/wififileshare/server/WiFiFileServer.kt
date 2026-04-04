@@ -213,63 +213,6 @@ class WiFiFileServer(
             return result
         }
 
-        if (uri.startsWith("/files/") && method == Method.GET) {
-            val path = uri.removePrefix("/files/")
-            val doc = directoryHandler.resolve(path)
-                ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
-            if (!doc.isFile) {
-                return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not a file")
-            }
-            val transferId = UUID.randomUUID().toString()
-            val size = doc.length().coerceAtLeast(0L)
-            val range = session.headers["range"]?.let { parseRangeHeader(it, size) }
-            val transferTotal = range?.let { it.second - it.first + 1 } ?: size
-            ServerStateStore.upsertTransfer(
-                TransferItem(
-                    id = transferId,
-                    fileName = doc.name ?: "file",
-                    relativePath = path,
-                    direction = Direction.DOWNLOAD,
-                    totalBytes = transferTotal,
-                    transferredBytes = 0L,
-                    speedBps = 0L,
-                    clientIp = ip,
-                    status = TransferStatus.ACTIVE,
-                ),
-            )
-            val response = downloadHandler.serveFile(doc, session) { transferred, speedBps, done ->
-                ServerStateStore.upsertTransfer(
-                    TransferItem(
-                        id = transferId,
-                        fileName = doc.name ?: "file",
-                        relativePath = path,
-                        direction = Direction.DOWNLOAD,
-                        totalBytes = transferTotal,
-                        transferredBytes = transferred.coerceAtMost(transferTotal),
-                        speedBps = speedBps,
-                        clientIp = ip,
-                        status = if (done) TransferStatus.COMPLETED else TransferStatus.ACTIVE,
-                    ),
-                )
-            }
-            if (response.status != Response.Status.OK && response.status != Response.Status.PARTIAL_CONTENT) {
-                ServerStateStore.upsertTransfer(
-                    TransferItem(
-                        id = transferId,
-                        fileName = doc.name ?: "file",
-                        relativePath = path,
-                        direction = Direction.DOWNLOAD,
-                        totalBytes = transferTotal,
-                        transferredBytes = 0L,
-                        speedBps = 0L,
-                        clientIp = ip,
-                        status = TransferStatus.FAILED,
-                    ),
-                )
-            }
-            return response
-        }
-
         if (uri.startsWith("/zip") && method == Method.GET) {
             if (!config.allowZipDownload) {
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "ZIP download disabled")
@@ -297,7 +240,13 @@ class WiFiFileServer(
 
         if (method == Method.GET) {
             val path = uri.trim('/').removePrefix("/")
-            return directoryHandler.serveDirectory(path, serverBase)
+            val doc = directoryHandler.resolve(path)
+                ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
+            return when {
+                doc.isDirectory -> directoryHandler.serveDirectory(path, serverBase)
+                doc.isFile -> serveFileWithTransfer(path, doc, ip, session)
+                else -> newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
+            }
         }
 
         return newFixedLengthResponse(Response.Status.METHOD_NOT_ALLOWED, MIME_PLAINTEXT, "")
@@ -353,6 +302,62 @@ class WiFiFileServer(
             }
             uploadTransferIds.remove(key)
         }
+    }
+
+    private fun serveFileWithTransfer(path: String, doc: DocumentFile, ip: String, session: IHTTPSession): Response {
+        val transferId = UUID.randomUUID().toString()
+        val size = doc.length().coerceAtLeast(0L)
+        val range = session.headers["range"]?.let { parseRangeHeader(it, size) }
+        val transferTotal = range?.let { it.second - it.first + 1 } ?: size
+        val fileName = doc.name ?: "file"
+
+        ServerStateStore.upsertTransfer(
+            TransferItem(
+                id = transferId,
+                fileName = fileName,
+                relativePath = path,
+                direction = Direction.DOWNLOAD,
+                totalBytes = transferTotal,
+                transferredBytes = 0L,
+                speedBps = 0L,
+                clientIp = ip,
+                status = TransferStatus.ACTIVE,
+            ),
+        )
+
+        val response = downloadHandler.serveFile(doc, session) { transferred, speedBps, done ->
+            ServerStateStore.upsertTransfer(
+                TransferItem(
+                    id = transferId,
+                    fileName = fileName,
+                    relativePath = path,
+                    direction = Direction.DOWNLOAD,
+                    totalBytes = transferTotal,
+                    transferredBytes = transferred.coerceAtMost(transferTotal),
+                    speedBps = speedBps,
+                    clientIp = ip,
+                    status = if (done) TransferStatus.COMPLETED else TransferStatus.ACTIVE,
+                ),
+            )
+        }
+
+        if (response.status != Response.Status.OK && response.status != Response.Status.PARTIAL_CONTENT) {
+            ServerStateStore.upsertTransfer(
+                TransferItem(
+                    id = transferId,
+                    fileName = fileName,
+                    relativePath = path,
+                    direction = Direction.DOWNLOAD,
+                    totalBytes = transferTotal,
+                    transferredBytes = 0L,
+                    speedBps = 0L,
+                    clientIp = ip,
+                    status = TransferStatus.FAILED,
+                ),
+            )
+        }
+
+        return response
     }
 
     private fun createDirectoryPath(path: String): Boolean {

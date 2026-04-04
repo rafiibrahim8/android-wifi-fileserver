@@ -4,7 +4,6 @@
     <EditTextPreference
         android:key="port"
         android:title="@string/pref_port_title"
-        android:defaultValue="8080"
         app:useSimpleSummaryProvider="true" />
 
     <SwitchPreferenceCompat

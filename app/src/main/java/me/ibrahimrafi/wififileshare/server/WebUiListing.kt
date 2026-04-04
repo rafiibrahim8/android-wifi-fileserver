@@ -39,7 +39,7 @@ internal fun buildRows(context: Context, currentPath: String, serverBase: String
                 append("<td class=\"hideable\"></td>")
                 append("</tr>")
             } else {
-                val downloadUrl = "$serverBase/files/$encoded"
+                val downloadUrl = "$serverBase/$encoded"
                 val timeIso = isoTime(entry.modified)
                 append("<tr class=\"entry-row entry-selectable\" data-selectable=\"1\" data-kind=\"file\" data-path=\"")
                 append(escapedRelativePath)

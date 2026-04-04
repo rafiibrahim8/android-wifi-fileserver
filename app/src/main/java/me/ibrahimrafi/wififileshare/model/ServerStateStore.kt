@@ -8,7 +8,7 @@ object ServerStateStore {
     private val _isRunning = MutableLiveData(false)
     val isRunning: LiveData<Boolean> = _isRunning
 
-    private val _url = MutableLiveData("http://0.0.0.0:8080")
+    private val _url = MutableLiveData(ServerConfig.defaultLocalUrl())
     val url: LiveData<String> = _url
 
     private val _networkName = MutableLiveData("Unknown")
