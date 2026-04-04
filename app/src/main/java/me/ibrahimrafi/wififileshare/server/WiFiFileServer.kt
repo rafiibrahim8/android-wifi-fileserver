@@ -71,6 +71,25 @@ class WiFiFileServer(
         val uri = session.uri.ifBlank { "/" }
         val method = session.method
 
+        if (uri.startsWith("/assets/icons/") && method == Method.GET) {
+            val iconName = uri.removePrefix("/assets/icons/").trim('/')
+            if (iconName.isBlank() || iconName.contains('/') || iconName.contains("..") || !iconName.endsWith(".svg")) {
+                return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
+            }
+            val stream = runCatching { context.assets.open("icons/$iconName") }.getOrNull()
+                ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
+            val size = runCatching { stream.available().toLong() }.getOrDefault(-1L)
+            return if (size > 0L) {
+                newFixedLengthResponse(Response.Status.OK, "image/svg+xml", stream, size).also {
+                    it.addHeader("Cache-Control", "public, max-age=3600")
+                }
+            } else {
+                newChunkedResponse(Response.Status.OK, "image/svg+xml", stream).also {
+                    it.addHeader("Cache-Control", "public, max-age=3600")
+                }
+            }
+        }
+
         if (uri.startsWith("/upload-cancel/") && (method == Method.POST || method == Method.DELETE)) {
             if (config.readOnlyFileserver) {
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Read-only mode enabled")
@@ -102,6 +121,25 @@ class WiFiFileServer(
                 newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, "Directory created")
             } else {
                 newFixedLengthResponse(Response.Status.CONFLICT, MIME_PLAINTEXT, "Directory exists or invalid path")
+            }
+        }
+
+        if (uri.startsWith("/delete/") && (method == Method.POST || method == Method.DELETE)) {
+            if (config.readOnlyFileserver) {
+                return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Read-only mode enabled")
+            }
+            val path = uri.removePrefix("/delete/").trim('/')
+            if (path.isBlank()) {
+                return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "Missing delete path")
+            }
+            val doc = directoryHandler.resolve(path)
+                ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
+            val deleted = runCatching { doc.delete() }.getOrDefault(false)
+            return if (deleted) {
+                cache.invalidate("")
+                newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, "Deleted")
+            } else {
+                newFixedLengthResponse(Response.Status.CONFLICT, MIME_PLAINTEXT, "Delete failed")
             }
         }
 
@@ -149,6 +187,7 @@ class WiFiFileServer(
             val status = when (result.status) {
                 Response.Status.OK -> TransferStatus.COMPLETED
                 Response.Status.ACCEPTED -> TransferStatus.ACTIVE
+                Response.Status.GONE -> TransferStatus.CANCELLED
                 else -> TransferStatus.FAILED
             }
             ServerStateStore.upsertTransfer(
@@ -164,7 +203,11 @@ class WiFiFileServer(
                     status = status,
                 ),
             )
-            if (status == TransferStatus.COMPLETED || status == TransferStatus.FAILED) {
+            if (
+                status == TransferStatus.COMPLETED ||
+                status == TransferStatus.FAILED ||
+                status == TransferStatus.CANCELLED
+            ) {
                 uploadTransferIds.remove(key)
             }
             return result
@@ -304,7 +347,7 @@ class WiFiFileServer(
                 ServerStateStore.upsertTransfer(
                     existing.copy(
                         speedBps = 0L,
-                        status = TransferStatus.FAILED,
+                        status = TransferStatus.CANCELLED,
                     ),
                 )
             }

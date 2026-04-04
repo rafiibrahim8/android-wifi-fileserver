@@ -2,7 +2,7 @@ package me.ibrahimrafi.wififileshare.model
 
 enum class Direction { DOWNLOAD, UPLOAD }
 
-enum class TransferStatus { ACTIVE, COMPLETED, FAILED }
+enum class TransferStatus { ACTIVE, COMPLETED, FAILED, CANCELLED }
 
 data class TransferItem(
     val id: String,

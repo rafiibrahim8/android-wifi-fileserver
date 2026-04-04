@@ -46,10 +46,12 @@ class DirectoryHandler(
             .toList()
 
         val html = HtmlPageBuilder.build(
+            context = context,
             currentPath = path,
             serverBase = serverBase,
             allowUploads = config.allowUploads && !config.readOnlyFileserver,
             allowCreateFolder = !config.readOnlyFileserver,
+            allowDelete = !config.readOnlyFileserver,
             allowZipDownload = config.allowZipDownload,
             anonymousAccess = config.anonymousAccess,
             entries = items,

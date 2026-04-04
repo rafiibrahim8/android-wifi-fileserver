@@ -44,7 +44,7 @@ object ServerStateStore {
                 transferredBytes = maxOf(item.transferredBytes, previous.transferredBytes),
                 speedBps = when {
                     item.speedBps > 0L -> item.speedBps
-                    previous.speedBps > 0L && item.status != TransferStatus.FAILED -> previous.speedBps
+                    previous.speedBps > 0L && item.status == TransferStatus.ACTIVE -> previous.speedBps
                     else -> item.speedBps
                 },
             )

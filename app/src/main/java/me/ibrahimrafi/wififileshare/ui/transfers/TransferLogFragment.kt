@@ -38,6 +38,7 @@ class TransferLogFragment : Fragment(R.layout.fragment_transfers) {
         val chipUploads = view.findViewById<Chip>(R.id.chip_uploads)
         val chipCompleted = view.findViewById<Chip>(R.id.chip_completed)
         val chipFailed = view.findViewById<Chip>(R.id.chip_failed)
+        val chipCancelled = view.findViewById<Chip>(R.id.chip_cancelled)
 
         val applyFilter = {
             val filtered = when {
@@ -45,12 +46,13 @@ class TransferLogFragment : Fragment(R.layout.fragment_transfers) {
                 chipUploads.isChecked -> allTransfers.filter { it.direction == Direction.UPLOAD }
                 chipCompleted.isChecked -> allTransfers.filter { it.status == TransferStatus.COMPLETED }
                 chipFailed.isChecked -> allTransfers.filter { it.status == TransferStatus.FAILED }
+                chipCancelled.isChecked -> allTransfers.filter { it.status == TransferStatus.CANCELLED }
                 else -> allTransfers
             }
             adapter.submitList(filtered)
         }
 
-        listOf(chipAll, chipDownloads, chipUploads, chipCompleted, chipFailed).forEach { chip ->
+        listOf(chipAll, chipDownloads, chipUploads, chipCompleted, chipFailed, chipCancelled).forEach { chip ->
             chip.setOnCheckedChangeListener { _, _ -> applyFilter() }
         }
 

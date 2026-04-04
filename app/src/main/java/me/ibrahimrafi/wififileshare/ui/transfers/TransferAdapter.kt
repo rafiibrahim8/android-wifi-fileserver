@@ -48,9 +48,12 @@ class TransferAdapter(
                 append("${formatBytes(item.transferredBytes)} / ${formatBytes(item.totalBytes)}")
                 append(" · ${formatRate(item.speedBps)}")
                 append(" · ${item.clientIp}")
-                append(" · ${item.status.name}")
+                append(" · ${statusLabel(item.status)}")
             }
-            progress.visibility = if (item.status == TransferStatus.FAILED) View.GONE else View.VISIBLE
+            progress.visibility = if (
+                item.status == TransferStatus.FAILED ||
+                item.status == TransferStatus.CANCELLED
+            ) View.GONE else View.VISIBLE
 
             val canCancel = item.direction == Direction.UPLOAD &&
                 item.status == TransferStatus.ACTIVE &&
@@ -77,6 +80,15 @@ class TransferAdapter(
             val mb = kb / 1024.0
             if (mb < 1024) return "%.1f MB".format(mb)
             return "%.2f GB".format(mb / 1024.0)
+        }
+
+        private fun statusLabel(status: TransferStatus): String {
+            return when (status) {
+                TransferStatus.ACTIVE -> "Active"
+                TransferStatus.COMPLETED -> "Completed"
+                TransferStatus.FAILED -> "Failed"
+                TransferStatus.CANCELLED -> "Cancelled"
+            }
         }
     }
 

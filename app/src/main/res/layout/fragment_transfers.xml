@@ -42,6 +42,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/failed" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_cancelled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancelled" />
     </com.google.android.material.chip.ChipGroup>
 
     <androidx.recyclerview.widget.RecyclerView

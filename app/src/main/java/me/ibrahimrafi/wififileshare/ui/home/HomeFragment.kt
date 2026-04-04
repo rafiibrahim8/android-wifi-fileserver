@@ -1,6 +1,7 @@
 package me.ibrahimrafi.wififileshare.ui.home
 
 import android.animation.ObjectAnimator
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -11,6 +12,7 @@ import android.view.animation.LinearInterpolator
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.button.MaterialButton
@@ -20,9 +22,27 @@ import me.ibrahimrafi.wififileshare.model.ServerStateStore
 import me.ibrahimrafi.wififileshare.model.TransferStatus
 import me.ibrahimrafi.wififileshare.qr.QrBitmapGenerator
 import me.ibrahimrafi.wififileshare.server.FileServerService
+import me.ibrahimrafi.wififileshare.storage.FolderAccessManager
+import me.ibrahimrafi.wififileshare.storage.ServerPreferences
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
     private var pulseAnimator: ObjectAnimator? = null
+    private val folderPicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode != Activity.RESULT_OK) {
+            Toast.makeText(requireContext(), getString(R.string.folder_not_selected), Toast.LENGTH_SHORT).show()
+            return@registerForActivityResult
+        }
+        val uri = result.data?.data
+        if (uri == null) {
+            Toast.makeText(requireContext(), getString(R.string.folder_not_selected), Toast.LENGTH_SHORT).show()
+            return@registerForActivityResult
+        }
+        runCatching { FolderAccessManager.persistUri(requireContext(), uri) }
+            .onSuccess { FileServerService.start(requireContext()) }
+            .onFailure {
+                Toast.makeText(requireContext(), getString(R.string.folder_not_selected), Toast.LENGTH_SHORT).show()
+            }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -40,7 +60,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             if (running) {
                 FileServerService.stop(requireContext())
             } else {
-                FileServerService.start(requireContext())
+                val rootUri = ServerPreferences(requireContext()).getConfig().rootUri
+                if (rootUri == null) {
+                    folderPicker.launch(FolderAccessManager.createFolderIntent())
+                } else {
+                    FileServerService.start(requireContext())
+                }
             }
         }
 

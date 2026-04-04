@@ -31,3 +31,4 @@ keystore.properties
 # OS files
 .DS_Store
 Thumbs.db
+.ignore/

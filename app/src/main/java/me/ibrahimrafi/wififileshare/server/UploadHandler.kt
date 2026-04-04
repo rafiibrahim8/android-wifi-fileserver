@@ -59,7 +59,7 @@ class UploadHandler(
         if (canceledUploads.contains(key)) {
             cleanupPartial(key, cleanedPath)
             return NanoHTTPD.newFixedLengthResponse(
-                NanoHTTPD.Response.Status.CONFLICT,
+                NanoHTTPD.Response.Status.GONE,
                 NanoHTTPD.MIME_PLAINTEXT,
                 "Upload canceled",
             )
@@ -140,7 +140,7 @@ class UploadHandler(
             if (writeResult.exceptionOrNull() is UploadCanceledException) {
                 cleanupPartial(key, cleanedPath)
                 return NanoHTTPD.newFixedLengthResponse(
-                    NanoHTTPD.Response.Status.CONFLICT,
+                    NanoHTTPD.Response.Status.GONE,
                     NanoHTTPD.MIME_PLAINTEXT,
                     "Upload canceled",
                 )
@@ -159,10 +159,21 @@ class UploadHandler(
         val received = contentRange.end + 1
         partialUploads[key] = PartialUpload(targetDoc.uri, received, contentRange.total)
         if (received >= contentRange.total) {
-            targetDoc.renameTo(fileName)
+            parent.findFile(fileName)
+                ?.takeIf { it.uri != targetDoc.uri }
+                ?.delete()
+            val renamed = targetDoc.renameTo(fileName)
             partialUploads.remove(key)
             canceledUploads.remove(key)
-            return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, "Upload complete")
+            return if (renamed) {
+                NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, "Upload complete")
+            } else {
+                NanoHTTPD.newFixedLengthResponse(
+                    NanoHTTPD.Response.Status.INTERNAL_ERROR,
+                    NanoHTTPD.MIME_PLAINTEXT,
+                    "Could not replace existing file",
+                )
+            }
         }
 
         return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.ACCEPTED, NanoHTTPD.MIME_PLAINTEXT, "Chunk accepted")
