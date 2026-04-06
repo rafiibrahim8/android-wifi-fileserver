@@ -11,6 +11,8 @@ import me.ibrahimrafi.wififileshare.model.ServerStateStore
 import me.ibrahimrafi.wififileshare.model.TransferItem
 import me.ibrahimrafi.wififileshare.model.TransferStatus
 import me.ibrahimrafi.wififileshare.storage.DocumentTreeCache
+import java.io.ByteArrayInputStream
+import java.security.SecureRandom
 import java.util.ArrayDeque
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -30,6 +32,11 @@ class WiFiFileServer(
     private val uploadHandler = UploadHandler(context, root, config.uploadSizeLimitBytes)
     private val requestWindow = ConcurrentHashMap<String, ArrayDeque<Long>>()
     private val uploadTransferIds = ConcurrentHashMap<String, String>()
+    private val webUiAssetToken = generateWebUiAssetToken()
+    private val webUiAssetBasePath = "/.$webUiAssetToken"
+    private val webUiStyleCssBytes = readAssetBytes("webui/style.css")
+    private val webUiAppJsBytes = readAssetBytes("webui/app.js")
+    private val webUiFaviconBytes = readAssetBytes("webui/favicon.ico")
 
     private val serverBase: String
         get() = "http://${localIpAddress(context)}:${config.port}"
@@ -88,6 +95,39 @@ class WiFiFileServer(
                     it.addHeader("Cache-Control", "public, max-age=3600")
                 }
             }
+        }
+
+        if (method == Method.GET && uri == "$webUiAssetBasePath/style.css") {
+            val body = webUiStyleCssBytes
+                ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
+            return serveWebUiAsset(
+                session = session,
+                mimeType = "text/css; charset=utf-8",
+                body = body,
+                etag = "\"$webUiAssetToken-css\"",
+            )
+        }
+
+        if (method == Method.GET && uri == "$webUiAssetBasePath/app.js") {
+            val body = webUiAppJsBytes
+                ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
+            return serveWebUiAsset(
+                session = session,
+                mimeType = "application/javascript; charset=utf-8",
+                body = body,
+                etag = "\"$webUiAssetToken-js\"",
+            )
+        }
+
+        if (method == Method.GET && uri == "$webUiAssetBasePath/favicon.ico") {
+            val body = webUiFaviconBytes
+                ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
+            return serveWebUiAsset(
+                session = session,
+                mimeType = "image/x-icon",
+                body = body,
+                etag = "\"$webUiAssetToken-favicon\"",
+            )
         }
 
         if (uri.startsWith("/upload-cancel/") && (method == Method.POST || method == Method.DELETE)) {
@@ -243,7 +283,7 @@ class WiFiFileServer(
             val doc = directoryHandler.resolve(path)
                 ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             return when {
-                doc.isDirectory -> directoryHandler.serveDirectory(path, serverBase)
+                doc.isDirectory -> directoryHandler.serveDirectory(path, serverBase, webUiAssetBasePath)
                 doc.isFile -> serveFileWithTransfer(path, doc, ip, session)
                 else -> newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             }
@@ -302,6 +342,33 @@ class WiFiFileServer(
             }
             uploadTransferIds.remove(key)
         }
+    }
+
+    private fun serveWebUiAsset(
+        session: IHTTPSession,
+        mimeType: String,
+        body: ByteArray,
+        etag: String,
+    ): Response {
+        val ifNoneMatch = session.headers["if-none-match"]?.trim()
+        val response = if (ifNoneMatch == etag) {
+            newFixedLengthResponse(Response.Status.NOT_MODIFIED, mimeType, "")
+        } else {
+            newFixedLengthResponse(Response.Status.OK, mimeType, ByteArrayInputStream(body), body.size.toLong())
+        }
+        response.addHeader("Cache-Control", "public, max-age=600")
+        response.addHeader("ETag", etag)
+        return response
+    }
+
+    private fun readAssetBytes(assetPath: String): ByteArray? {
+        return runCatching { context.assets.open(assetPath).use { it.readBytes() } }.getOrNull()
+    }
+
+    private fun generateWebUiAssetToken(): String {
+        val randomBytes = ByteArray(18)
+        SecureRandom().nextBytes(randomBytes)
+        return Base64.encodeToString(randomBytes, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
     }
 
     private fun serveFileWithTransfer(path: String, doc: DocumentFile, ip: String, session: IHTTPSession): Response {

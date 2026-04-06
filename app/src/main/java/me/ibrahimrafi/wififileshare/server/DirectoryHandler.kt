@@ -18,7 +18,7 @@ class DirectoryHandler(
 ) {
     fun resolve(path: String): DocumentFile? = cache.resolvePath(path)
 
-    fun serveDirectory(path: String, serverBase: String): NanoHTTPD.Response {
+    fun serveDirectory(path: String, serverBase: String, assetBasePath: String): NanoHTTPD.Response {
         val dir = resolve(path)
             ?: return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "Not found")
         if (!dir.isDirectory) {
@@ -49,6 +49,7 @@ class DirectoryHandler(
             context = context,
             currentPath = path,
             serverBase = serverBase,
+            assetBasePath = assetBasePath,
             allowUploads = config.allowUploads && !config.readOnlyFileserver,
             allowCreateFolder = !config.readOnlyFileserver,
             allowDelete = !config.readOnlyFileserver,

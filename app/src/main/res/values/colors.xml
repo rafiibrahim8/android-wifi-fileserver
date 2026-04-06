@@ -1,14 +1,14 @@
 <resources>
-    <color name="seed">#007B7F</color>
-    <color name="surface_dark">#0D1F22</color>
-    <color name="surface_variant_dark">#1A2F33</color>
-    <color name="primary_dark">#4DD8E0</color>
-    <color name="on_primary_dark">#003740</color>
-    <color name="secondary_dark">#B0CDD0</color>
-    <color name="error_dark">#FF6B6B</color>
-    <color name="success_dark">#4DEBA8</color>
-    <color name="surface_light">#F4FAFB</color>
-    <color name="primary_light">#006469</color>
-    <color name="amber_upload">#F7B955</color>
-    <color name="rose_stop">#D95D6A</color>
+    <color name="seed">#006ED3</color>
+    <color name="surface_dark">#101720</color>
+    <color name="surface_variant_dark">#162030</color>
+    <color name="primary_dark">#006ED3</color>
+    <color name="on_primary_dark">#FFFFFF</color>
+    <color name="secondary_dark">#9FC0E0</color>
+    <color name="error_dark">#D9534F</color>
+    <color name="success_dark">#2AB37A</color>
+    <color name="surface_light">#FFFFFF</color>
+    <color name="primary_light">#006ED3</color>
+    <color name="amber_upload">#FFB900</color>
+    <color name="rose_stop">#D9534F</color>
 </resources>

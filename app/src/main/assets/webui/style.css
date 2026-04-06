@@ -1,6 +1,3 @@
-package me.ibrahimrafi.wififileshare.server
-
-internal val WEB_UI_CSS = """
 * {
   padding: 0;
   margin: 0;
@@ -514,4 +511,126 @@ body.delete-mode .entry-selectable.selected {
     align-items: center;
   }
 }
-""".trimIndent()
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #1a1f26;
+    color: #ccc;
+  }
+  body,
+  a,
+  svg,
+  .layout.current,
+  .layout.current svg,
+  .go-up {
+    color: #ccc;
+  }
+  header,
+  main {
+    background-color: #101720;
+  }
+  header {
+    box-shadow: 0 0 20px #0000004d;
+  }
+  .deprecation-banner {
+    background: #2a3542;
+    border-bottom: 1px solid #3b4c5f;
+    color: #d0dae6;
+  }
+  .deprecation-banner a {
+    color: #abc8e3;
+  }
+  .meta {
+    border-bottom: 1px solid #222e3b;
+  }
+  h1 {
+    color: #fff;
+  }
+  h1 a,
+  th a {
+    color: #fff;
+  }
+  h1 a:hover {
+    background: #75b3ff33;
+  }
+  td a {
+    color: #abc8e3;
+  }
+  td a:hover {
+    color: #fff;
+  }
+  .grid .size {
+    color: #8ea8c4;
+  }
+  #search-icon {
+    color: #7798c4;
+  }
+  #filter {
+    border: 1px solid #29435c;
+    background: #0e141d;
+    color: #d6e3f1;
+  }
+  .layout,
+  .layout svg {
+    color: #8fa4ba;
+  }
+  tbody tr:hover,
+  .grid .entry a:hover {
+    background-color: #162030;
+  }
+  th {
+    background: #18212c;
+  }
+  .listing .icon-tabler {
+    color: #abc8e3;
+  }
+  .sizebar-bar {
+    background-color: #1f3549;
+  }
+  .btn {
+    border-color: #314354;
+    background: #0f1720;
+    color: #d6e3f1;
+  }
+  .btn:hover {
+    background: #182434;
+  }
+  .btn-danger {
+    border-color: #8b4a56;
+    color: #f2b6bf;
+  }
+  .copy-btn {
+    border-color: #314354;
+    background: #0f1720;
+    color: #9fc0e0;
+  }
+  .copy-btn:hover {
+    color: #d8ebff;
+    border-color: #4a6784;
+  }
+  .upload-dock {
+    background: rgba(16, 23, 32, 0.98);
+    border-top: 1px solid #263748;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.35);
+  }
+  .upload-text {
+    color: #9fc0e0;
+  }
+  .progress-track {
+    background: #0e141d;
+    border-color: #263748;
+  }
+  .dock-icon-btn {
+    border-color: #8b4a56;
+    background: #0f1720;
+    color: #f2b6bf;
+  }
+  .dock-icon-btn:hover {
+    background: #2b1c23;
+  }
+  .entry-selectable .select-mark {
+    border-color: #4a6784;
+  }
+  body.delete-mode .entry-selectable.selected {
+    background-color: #3a2227 !important;
+  }
+}

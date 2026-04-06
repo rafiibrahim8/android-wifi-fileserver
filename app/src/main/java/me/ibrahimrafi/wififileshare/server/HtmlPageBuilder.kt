@@ -7,6 +7,7 @@ object HtmlPageBuilder {
         context: Context,
         currentPath: String,
         serverBase: String,
+        assetBasePath: String,
         allowUploads: Boolean,
         allowCreateFolder: Boolean,
         allowDelete: Boolean,
@@ -66,6 +67,7 @@ object HtmlPageBuilder {
         return buildWebUiTemplate(
             currentPath = currentPath,
             allowUploads = allowUploads,
+            assetBasePath = assetBasePath,
             dirsCount = dirsCount,
             filesCount = filesCount,
             breadcrumb = breadcrumb,
