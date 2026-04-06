@@ -44,7 +44,7 @@ class TransferAdapter(
                 ),
             )
             detail.text = buildString {
-                append(if (item.direction == Direction.DOWNLOAD) "↓ " else "↑ ")
+                append(if (item.direction == Direction.UPLOAD) "↓ " else "↑ ")
                 append("${formatBytes(item.transferredBytes)} / ${formatBytes(item.totalBytes)}")
                 append(" · ${formatRate(item.speedBps)}")
                 append(" · ${item.clientIp}")

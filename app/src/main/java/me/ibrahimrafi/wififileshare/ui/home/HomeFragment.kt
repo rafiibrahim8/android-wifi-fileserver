@@ -6,7 +6,9 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
+import android.os.Handler
 import android.os.Bundle
+import android.os.Looper
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.ImageView
@@ -27,6 +29,21 @@ import me.ibrahimrafi.wififileshare.storage.ServerPreferences
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
     private var pulseAnimator: ObjectAnimator? = null
+    private val uiHandler = Handler(Looper.getMainLooper())
+    private var isStartPending = false
+    private var stateText: TextView? = null
+    private var urlText: TextView? = null
+    private var statusDot: View? = null
+    private var startStopButton: MaterialButton? = null
+    private var qrImage: ImageView? = null
+    private var qrPlaceholder: TextView? = null
+    private val startPendingTimeout = Runnable {
+        if (ServerStateStore.isRunning.value != true && isAdded) {
+            isStartPending = false
+            renderRunningState(false)
+        }
+    }
+
     private val folderPicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode != Activity.RESULT_OK) {
             Toast.makeText(requireContext(), getString(R.string.folder_not_selected), Toast.LENGTH_SHORT).show()
@@ -38,7 +55,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             return@registerForActivityResult
         }
         runCatching { FolderAccessManager.persistUri(requireContext(), uri) }
-            .onSuccess { FileServerService.start(requireContext()) }
+            .onSuccess {
+                setStartPending(true)
+                FileServerService.start(requireContext())
+            }
             .onFailure {
                 Toast.makeText(requireContext(), getString(R.string.folder_not_selected), Toast.LENGTH_SHORT).show()
             }
@@ -49,21 +69,29 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         val stateText = view.findViewById<TextView>(R.id.server_state)
         val urlText = view.findViewById<TextView>(R.id.server_url)
-        val networkText = view.findViewById<TextView>(R.id.network_name)
         val quickStats = view.findViewById<TextView>(R.id.quick_stats)
         val statusDot = view.findViewById<View>(R.id.status_dot)
         val startStopButton = view.findViewById<MaterialButton>(R.id.start_stop_button)
         val qrImage = view.findViewById<ImageView>(R.id.qr_image)
+        val qrPlaceholder = view.findViewById<TextView>(R.id.qr_placeholder)
+        this.stateText = stateText
+        this.urlText = urlText
+        this.statusDot = statusDot
+        this.startStopButton = startStopButton
+        this.qrImage = qrImage
+        this.qrPlaceholder = qrPlaceholder
 
         startStopButton.setOnClickListener {
             val running = ServerStateStore.isRunning.value == true
             if (running) {
+                setStartPending(false)
                 FileServerService.stop(requireContext())
             } else {
                 val rootUri = ServerPreferences(requireContext()).getConfig().rootUri
                 if (rootUri == null) {
                     folderPicker.launch(FolderAccessManager.createFolderIntent())
                 } else {
+                    setStartPending(true)
                     FileServerService.start(requireContext())
                 }
             }
@@ -77,33 +105,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         ServerStateStore.isRunning.observe(viewLifecycleOwner) { running ->
-            stateText.setText(if (running) R.string.server_running else R.string.server_not_running)
-            startStopButton.setText(if (running) R.string.stop_server else R.string.start_server)
-            startStopButton.setIconResource(if (running) android.R.drawable.ic_delete else android.R.drawable.ic_menu_upload)
-            startStopButton.backgroundTintList = ContextCompat.getColorStateList(
-                requireContext(),
-                if (running) R.color.rose_stop else R.color.primary_light,
-            )
-            setDotColor(statusDot, if (running) R.color.success_dark else R.color.error_dark)
             if (running) {
-                pulse(statusDot)
-                urlText.visibility = View.VISIBLE
-                qrImage.visibility = View.VISIBLE
-            } else {
-                pulseAnimator?.cancel()
-                statusDot.alpha = 1f
-                urlText.visibility = View.INVISIBLE
-                qrImage.visibility = View.INVISIBLE
+                setStartPending(false)
             }
+            renderRunningState(running)
         }
 
         ServerStateStore.url.observe(viewLifecycleOwner) { url ->
             urlText.text = url
             qrImage.setImageBitmap(QrBitmapGenerator.generateQrBitmap(url, 512))
-        }
-
-        ServerStateStore.networkName.observe(viewLifecycleOwner) { network ->
-            networkText.text = "Network: $network"
         }
 
         ServerStateStore.transfers.observe(viewLifecycleOwner) { transfers ->
@@ -137,7 +147,65 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         drawable.setColor(ContextCompat.getColor(requireContext(), colorRes))
     }
 
+    private fun setStartPending(pending: Boolean) {
+        isStartPending = pending
+        uiHandler.removeCallbacks(startPendingTimeout)
+        if (pending) {
+            uiHandler.postDelayed(startPendingTimeout, 8_000L)
+        }
+        renderRunningState(ServerStateStore.isRunning.value == true)
+    }
+
+    private fun renderRunningState(running: Boolean) {
+        val stateView = stateText ?: return
+        val urlView = urlText ?: return
+        val dotView = statusDot ?: return
+        val button = startStopButton ?: return
+        val qrView = qrImage ?: return
+        val qrHint = qrPlaceholder ?: return
+
+        if (running) {
+            stateView.setText(R.string.server_running)
+            button.setText(R.string.stop_server)
+            button.setIconResource(R.drawable.ic_action_stop)
+            button.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.rose_stop)
+            button.isEnabled = true
+            setDotColor(dotView, R.color.success_dark)
+            pulse(dotView)
+            urlView.visibility = View.VISIBLE
+            qrView.visibility = View.VISIBLE
+            qrHint.visibility = View.GONE
+            return
+        }
+
+        pulseAnimator?.cancel()
+        dotView.alpha = 1f
+        urlView.visibility = View.INVISIBLE
+        qrView.visibility = View.INVISIBLE
+        qrHint.visibility = View.VISIBLE
+        button.setIconResource(R.drawable.ic_action_start)
+        button.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.primary_light)
+        setDotColor(dotView, R.color.error_dark)
+
+        if (isStartPending) {
+            stateView.setText(R.string.server_starting)
+            button.setText(R.string.starting_server)
+            button.isEnabled = false
+        } else {
+            stateView.setText(R.string.server_not_running)
+            button.setText(R.string.start_server)
+            button.isEnabled = true
+        }
+    }
+
     override fun onDestroyView() {
+        uiHandler.removeCallbacks(startPendingTimeout)
+        stateText = null
+        urlText = null
+        statusDot = null
+        startStopButton = null
+        qrImage = null
+        qrPlaceholder = null
         pulseAnimator?.cancel()
         pulseAnimator = null
         super.onDestroyView()

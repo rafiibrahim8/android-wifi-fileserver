@@ -1,126 +1,199 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:paddingStart="20dp"
+    android:paddingTop="20dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="20dp">
 
-    <androidx.core.widget.NestedScrollView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:fontFamily="@font/outfit_regular"
+            android:text="@string/home_header_title"
+            android:textSize="30sp"
+            android:textStyle="bold" />
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/status_card"
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/home_header_subtitle"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="14sp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/status_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardCornerRadius="26dp"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorSurfaceVariant"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="24dp"
-                app:cardUseCompatPadding="true">
+                android:orientation="vertical"
+                android:padding="18dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <View
-                            android:id="@+id/status_dot"
-                            android:layout_width="10dp"
-                            android:layout_height="10dp"
-                            android:background="@drawable/bg_status_dot" />
-
-                        <TextView
-                            android:id="@+id/server_state"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="@string/server_not_running"
-                            android:textAllCaps="true"
-                            android:textStyle="bold" />
-                    </LinearLayout>
+                    <View
+                        android:id="@+id/status_dot"
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="@drawable/bg_status_dot" />
 
                     <TextView
-                        android:id="@+id/network_name"
-                        android:layout_width="match_parent"
+                        android:id="@+id/server_state"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="@string/network_unknown" />
-
-                    <TextView
-                        android:id="@+id/server_url"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="@font/jetbrains_mono"
+                        android:layout_marginStart="10dp"
+                        android:fontFamily="@font/outfit_regular"
+                        android:text="@string/server_not_running"
+                        android:textAllCaps="true"
+                        android:textSize="12sp"
                         android:textStyle="bold" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/start_stop_button"
-                style="@style/Widget.Material3.Button"
+                <TextView
+                    android:id="@+id/server_url"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:fontFamily="@font/jetbrains_mono"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/start_stop_button"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="14dp"
+            android:fontFamily="@font/outfit_regular"
+            android:text="@string/start_server"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:cornerRadius="28dp"
+            app:icon="@drawable/ic_action_start"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconSize="24dp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/qr_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardCornerRadius="26dp"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorSurfaceVariant"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/start_server"
-                app:cornerRadius="999dp"
-                app:icon="@android:drawable/ic_menu_upload" />
+                android:orientation="vertical"
+                android:padding="18dp">
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/qr_card"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="24dp"
-                app:cardUseCompatPadding="true">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit_regular"
+                    android:text="@string/home_qr_label"
+                    android:textAllCaps="true"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:paddingTop="10dp">
 
-                    <ImageView
-                        android:id="@+id/qr_image"
+                    <FrameLayout
                         android:layout_width="220dp"
-                        android:layout_height="220dp"
-                        android:contentDescription="QR code" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        android:layout_height="220dp">
 
-            <com.google.android.material.card.MaterialCardView
+                        <ImageView
+                            android:id="@+id/qr_image"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="QR code" />
+
+                        <TextView
+                            android:id="@+id/qr_placeholder"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:fontFamily="@font/outfit_regular"
+                            android:gravity="center"
+                            android:text="@string/qr_placeholder"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="14sp" />
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardCornerRadius="26dp"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorSurfaceVariant"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="24dp"
-                app:cardUseCompatPadding="true">
+                android:orientation="vertical"
+                android:padding="18dp">
 
-                <LinearLayout
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit_regular"
+                    android:text="@string/home_speed_label"
+                    android:textAllCaps="true"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/quick_stats"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/quick_stats"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/jetbrains_mono"
-                        android:text="↑ 0 B/s    ↓ 0 B/s" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+                    android:layout_marginTop="6dp"
+                    android:fontFamily="@font/jetbrains_mono"
+                    android:text="↑ 0 B/s    ↓ 0 B/s"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="15sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

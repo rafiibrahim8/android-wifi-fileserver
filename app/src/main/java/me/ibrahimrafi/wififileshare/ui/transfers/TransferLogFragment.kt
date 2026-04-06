@@ -2,10 +2,12 @@ package me.ibrahimrafi.wififileshare.ui.transfers
 
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.chip.Chip
 import me.ibrahimrafi.wififileshare.R
 import me.ibrahimrafi.wififileshare.model.Direction
@@ -24,8 +26,10 @@ class TransferLogFragment : Fragment(R.layout.fragment_transfers) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val recycler = view.findViewById<RecyclerView>(R.id.transfers_recycler)
+        val emptyState = view.findViewById<TextView>(R.id.transfers_empty)
         recycler.layoutManager = LinearLayoutManager(requireContext())
         recycler.adapter = adapter
+        (recycler.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
 
         val clearButton = view.findViewById<View>(R.id.clear_button)
         clearButton.setOnClickListener {
@@ -50,6 +54,7 @@ class TransferLogFragment : Fragment(R.layout.fragment_transfers) {
                 else -> allTransfers
             }
             adapter.submitList(filtered)
+            emptyState.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
         }
 
         listOf(chipAll, chipDownloads, chipUploads, chipCompleted, chipFailed, chipCancelled).forEach { chip ->
