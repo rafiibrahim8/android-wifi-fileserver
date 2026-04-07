@@ -81,19 +81,14 @@ class SettingsPreferencesFragment : PreferenceFragmentCompat() {
             val anonymous = anonPref.isChecked
             userPref?.isVisible = !anonymous
             passwordPref?.isVisible = !anonymous
-            anonPref.summary = if (anonymous) {
-                "Anonymous access enabled"
-            } else {
-                "With auth enabled, use: wget --user=USER --password=PASS \"URL\""
-            }
+            anonPref.summary = null
         }
 
-        passwordPref?.text = ""
         passwordPref?.summary = if (serverPreferences.getConfig().password.isNotEmpty()) "********" else ""
         passwordPref?.setOnPreferenceChangeListener { _, newValue ->
-            serverPreferences.setPassword((newValue as? String).orEmpty())
-            passwordPref.summary = if ((newValue as? String).isNullOrBlank()) "" else "********"
-            false
+            val password = (newValue as? String).orEmpty()
+            passwordPref.summary = if (password.isBlank()) "" else "********"
+            true
         }
 
         anonPref.setOnPreferenceChangeListener { _, newValue ->

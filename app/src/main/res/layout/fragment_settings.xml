@@ -25,6 +25,17 @@
         android:textColor="?attr/colorOnSurface"
         android:textSize="14sp" />
 
+    <TextView
+        android:id="@+id/settings_restart_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/outfit_regular"
+        android:text="@string/settings_restart_hint"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="13sp"
+        android:visibility="gone" />
+
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="0dp"

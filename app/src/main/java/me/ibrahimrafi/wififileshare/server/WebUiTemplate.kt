@@ -14,7 +14,6 @@ internal fun buildWebUiTemplate(
     deleteToggleButton: String,
     createFolderButton: String,
     zipSection: String,
-    authHint: String,
 ): String {
     return """<!DOCTYPE html>
 <html lang="en">
@@ -49,8 +48,6 @@ internal fun buildWebUiTemplate(
         </div>
         $uploadInput
       </div>
-
-      $authHint
 
       <div class="listing">
         <table aria-describedby="summary">

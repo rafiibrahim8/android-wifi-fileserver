@@ -8,6 +8,9 @@ object ServerStateStore {
     private val _isRunning = MutableLiveData(false)
     val isRunning: LiveData<Boolean> = _isRunning
 
+    private val _hasPendingRestartNotice = MutableLiveData(false)
+    val hasPendingRestartNotice: LiveData<Boolean> = _hasPendingRestartNotice
+
     private val _url = MutableLiveData(ServerConfig.defaultLocalUrl())
     val url: LiveData<String> = _url
 
@@ -22,6 +25,13 @@ object ServerStateStore {
 
     fun setRunning(running: Boolean) {
         _isRunning.postValue(running)
+        if (!running) {
+            _hasPendingRestartNotice.postValue(false)
+        }
+    }
+
+    fun markSettingsChangedWhileRunning() {
+        _hasPendingRestartNotice.postValue(true)
     }
 
     fun setUrl(url: String) {

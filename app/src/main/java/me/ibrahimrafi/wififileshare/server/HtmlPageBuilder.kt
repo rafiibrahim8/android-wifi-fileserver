@@ -12,7 +12,6 @@ object HtmlPageBuilder {
         allowCreateFolder: Boolean,
         allowDelete: Boolean,
         allowZipDownload: Boolean,
-        anonymousAccess: Boolean,
         entries: List<DirectoryEntry>,
     ): String {
         val filesCount = entries.count { !it.isDirectory }
@@ -58,12 +57,6 @@ object HtmlPageBuilder {
             ""
         }
 
-        val authHint = if (anonymousAccess) {
-            ""
-        } else {
-            "<div class=\"hint\">Auth enabled: wget --user=USER --password=PASS \"URL\"</div>"
-        }
-
         return buildWebUiTemplate(
             currentPath = currentPath,
             allowUploads = allowUploads,
@@ -78,7 +71,6 @@ object HtmlPageBuilder {
             deleteToggleButton = deleteToggleButton,
             createFolderButton = createFolderButton,
             zipSection = zipSection,
-            authHint = authHint,
         )
     }
 }

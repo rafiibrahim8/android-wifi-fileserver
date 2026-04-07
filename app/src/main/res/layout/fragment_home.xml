@@ -3,11 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:clipToPadding="false"
-    android:paddingStart="20dp"
-    android:paddingTop="20dp"
-    android:paddingEnd="20dp"
-    android:paddingBottom="20dp">
+    android:paddingStart="@dimen/home_padding_horizontal"
+    android:paddingTop="@dimen/home_padding_vertical"
+    android:paddingEnd="@dimen/home_padding_horizontal"
+    android:paddingBottom="@dimen/home_padding_vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,7 +33,7 @@
             android:id="@+id/status_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="@dimen/home_status_gap"
             app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="26dp"
             app:cardElevation="0dp"
@@ -88,7 +87,7 @@
             style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="@dimen/home_section_gap"
             android:fontFamily="@font/outfit_regular"
             android:text="@string/start_server"
             android:textSize="14sp"
@@ -103,7 +102,7 @@
             android:id="@+id/qr_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="@dimen/home_section_gap"
             app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="26dp"
             app:cardElevation="0dp"
@@ -134,8 +133,8 @@
                     android:paddingTop="10dp">
 
                     <FrameLayout
-                        android:layout_width="220dp"
-                        android:layout_height="220dp">
+                        android:layout_width="@dimen/home_qr_size"
+                        android:layout_height="@dimen/home_qr_size">
 
                         <ImageView
                             android:id="@+id/qr_image"
@@ -161,7 +160,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="@dimen/home_section_gap"
             app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="26dp"
             app:cardElevation="0dp"

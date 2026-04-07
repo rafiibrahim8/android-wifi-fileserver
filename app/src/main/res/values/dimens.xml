@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="home_padding_horizontal">16dp</dimen>
+    <dimen name="home_padding_vertical">16dp</dimen>
+    <dimen name="home_status_gap">14dp</dimen>
+    <dimen name="home_section_gap">10dp</dimen>
+    <dimen name="home_qr_size">180dp</dimen>
+</resources>

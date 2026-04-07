@@ -53,7 +53,6 @@ class DirectoryHandler(
             allowCreateFolder = !config.readOnlyFileserver,
             allowDelete = !config.readOnlyFileserver,
             allowZipDownload = config.allowZipDownload,
-            anonymousAccess = config.anonymousAccess,
             entries = items,
         )
 

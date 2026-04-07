@@ -24,7 +24,6 @@
     <string name="pref_anon_title">Anonymous access</string>
     <string name="pref_user_title">User ID</string>
     <string name="pref_password_title">Password</string>
-    <string name="pref_ssl_title">Use SSL/TLS</string>
     <string name="pref_root_title">Root folder</string>
     <string name="pref_theme_title">Theme</string>
     <string name="pref_read_only_title">Read Only Fileserver</string>
@@ -32,7 +31,6 @@
     <string name="pref_upload_title">Allow uploads</string>
     <string name="pref_zip_title">Allow ZIP download</string>
     <string name="pref_hidden_title">Show hidden files</string>
-    <string name="pref_connections_title">Max connections</string>
     <string name="pref_speed_title">Max speed</string>
     <string name="all">All</string>
     <string name="downloads">Downloads</string>
@@ -57,6 +55,7 @@
     <string name="transfer_status_cancelled">Cancelled</string>
     <string name="settings_header_title">Settings</string>
     <string name="settings_header_subtitle">Configure server behavior and preferences</string>
+    <string name="settings_restart_hint">Changes will apply after restarting the server.</string>
     <string name="shortcut_start_server">Start Server</string>
     <string name="shortcut_start_server_long">Start WiFi File Share Server</string>
 </resources>

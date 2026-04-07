@@ -4,36 +4,37 @@
     <EditTextPreference
         android:key="port"
         android:title="@string/pref_port_title"
+        app:iconSpaceReserved="false"
         app:useSimpleSummaryProvider="true" />
 
     <SwitchPreferenceCompat
         android:key="anonymous_access"
         android:title="@string/pref_anon_title"
+        app:iconSpaceReserved="false"
         android:defaultValue="true" />
 
     <EditTextPreference
         android:key="user_id"
         android:title="@string/pref_user_title"
+        app:iconSpaceReserved="false"
         app:useSimpleSummaryProvider="true" />
 
     <EditTextPreference
         android:key="password"
         android:title="@string/pref_password_title"
+        app:iconSpaceReserved="false"
         android:summary="********" />
-
-    <SwitchPreferenceCompat
-        android:key="use_ssl"
-        android:title="@string/pref_ssl_title"
-        android:defaultValue="false" />
 
     <Preference
         android:key="root_folder"
         android:title="@string/pref_root_title"
+        app:iconSpaceReserved="false"
         android:summary="@string/folder_not_selected" />
 
     <ListPreference
         android:key="theme_mode"
         android:title="@string/pref_theme_title"
+        app:iconSpaceReserved="false"
         android:defaultValue="system"
         android:entries="@array/theme_entries"
         android:entryValues="@array/theme_values"
@@ -42,35 +43,32 @@
     <SwitchPreferenceCompat
         android:key="read_only_fileserver"
         android:title="@string/pref_read_only_title"
+        app:iconSpaceReserved="false"
         android:defaultValue="false" />
 
     <SwitchPreferenceCompat
         android:key="allow_uploads"
         android:title="@string/pref_upload_title"
+        app:iconSpaceReserved="false"
         android:defaultValue="true" />
 
     <SwitchPreferenceCompat
         android:key="allow_zip"
         android:title="@string/pref_zip_title"
+        app:iconSpaceReserved="false"
         android:summary="ZIP downloads are CPU-intensive on large directories."
         android:defaultValue="false" />
 
     <SwitchPreferenceCompat
         android:key="show_hidden"
         android:title="@string/pref_hidden_title"
+        app:iconSpaceReserved="false"
         android:defaultValue="false" />
-
-    <SeekBarPreference
-        android:key="max_connections"
-        android:title="@string/pref_connections_title"
-        android:defaultValue="10"
-        android:min="1"
-        android:max="50"
-        app:showSeekBarValue="true" />
 
     <ListPreference
         android:key="max_speed"
         android:title="@string/pref_speed_title"
+        app:iconSpaceReserved="false"
         android:defaultValue="off"
         android:entries="@array/speed_entries"
         android:entryValues="@array/speed_values"
