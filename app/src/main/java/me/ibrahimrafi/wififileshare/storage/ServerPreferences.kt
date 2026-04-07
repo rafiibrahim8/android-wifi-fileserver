@@ -4,22 +4,10 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import me.ibrahimrafi.wififileshare.model.ServerConfig
 
 class ServerPreferences(context: Context) {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
-    private val securePrefs = EncryptedSharedPreferences.create(
-        context,
-        "server_secure_prefs",
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-    )
 
     fun getConfig(): ServerConfig {
         val defaultPort = ServerConfig.DEFAULT_PORT
@@ -29,7 +17,7 @@ class ServerPreferences(context: Context) {
             port = port,
             anonymousAccess = prefs.getBoolean(KEY_ANON, true),
             userId = prefs.getString(KEY_USER, "") ?: "",
-            password = securePrefs.getString(KEY_PASSWORD, "") ?: "",
+            password = prefs.getString(KEY_PASSWORD, "") ?: "",
             useSsl = prefs.getBoolean(KEY_SSL, false),
             readOnlyFileserver = prefs.getBoolean(KEY_READ_ONLY_FILESERVER, false),
             allowUploads = prefs.getBoolean(KEY_ALLOW_UPLOADS, true),
@@ -46,7 +34,7 @@ class ServerPreferences(context: Context) {
     }
 
     fun setPassword(password: String) {
-        securePrefs.edit { putString(KEY_PASSWORD, password) }
+        prefs.edit { putString(KEY_PASSWORD, password) }
     }
 
     private fun parseSpeed(value: String): Long {

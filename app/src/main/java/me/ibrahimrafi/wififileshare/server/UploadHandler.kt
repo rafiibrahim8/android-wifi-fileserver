@@ -38,16 +38,16 @@ class UploadHandler(
 
         val fileName = cleanedPath.last()
         val parent = resolveExistingDirectories(cleanedPath.dropLast(1))
-        var deletedAny = false
 
         partialUploads.remove(key)?.let {
-            deletedAny = runCatching { context.contentResolver.delete(it.uri, null, null) > 0 }.getOrDefault(false) || deletedAny
-        }
-        parent?.findFile("$fileName.part")?.let {
-            deletedAny = it.delete() || deletedAny
+            runCatching { context.contentResolver.delete(it.uri, null, null) > 0 }
         }
 
-        return deletedAny || true
+        parent?.findFile("$fileName.part")?.let {
+            it.delete()
+        }
+
+        return true
     }
 
     fun handleUpload(relativePath: String, session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {

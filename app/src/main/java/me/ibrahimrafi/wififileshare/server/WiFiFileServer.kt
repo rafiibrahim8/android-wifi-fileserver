@@ -27,7 +27,7 @@ class WiFiFileServer(
 
     private val cache = DocumentTreeCache(root)
     private val tokenManager = AccessTokenManager()
-    private val directoryHandler = DirectoryHandler(context, cache, config, tokenManager)
+    private val directoryHandler = DirectoryHandler(context, cache, config)
     private val downloadHandler = DownloadHandler(context, config.maxSpeedBps)
     private val uploadHandler = UploadHandler(context, root, config.uploadSizeLimitBytes)
     private val requestWindow = ConcurrentHashMap<String, ArrayDeque<Long>>()

@@ -14,7 +14,6 @@ class DirectoryHandler(
     private val context: Context,
     private val cache: DocumentTreeCache,
     private val config: ServerConfig,
-    private val tokenManager: AccessTokenManager,
 ) {
     fun resolve(path: String): DocumentFile? = cache.resolvePath(path)
 
@@ -80,10 +79,6 @@ class DirectoryHandler(
             val dirName = percentEncodeFileName(dir.name ?: "directory")
             it.addHeader("Content-Disposition", "attachment; filename*=UTF-8''$dirName.zip")
         }
-    }
-
-    fun createToken(path: String): String {
-        return tokenManager.create(path)
     }
 
     private fun writeDirectoryToZip(zip: ZipOutputStream, dir: DocumentFile, basePath: String) {

@@ -1,23 +1,27 @@
 package me.ibrahimrafi.wififileshare.server
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
-import android.text.format.Formatter
 import android.webkit.MimeTypeMap
 import java.io.InputStream
-import java.net.URLEncoder
 import java.net.URLConnection
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import java.util.Date
 import java.util.Locale
-import kotlin.math.max
+import java.text.SimpleDateFormat
 
-private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+private val timeFormatter = ThreadLocal.withInitial {
+    SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
+}
 
 fun formatTime(epochMs: Long): String {
-    return timeFormatter.format(Instant.ofEpochMilli(epochMs).atZone(ZoneId.systemDefault()))
+    val formatter = timeFormatter.get() ?: SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US).also {
+        timeFormatter.set(it)
+    }
+    return formatter.format(Date(epochMs))
 }
 
 fun formatBytes(bytes: Long): String {
@@ -41,13 +45,37 @@ fun percentEncodeFileName(fileName: String): String {
 }
 
 fun parseRangeHeader(header: String, size: Long): Pair<Long, Long>? {
-    val cleaned = header.removePrefix("bytes=")
-    val pieces = cleaned.split('-', limit = 2)
-    if (pieces.size != 2) return null
-    val start = pieces[0].toLongOrNull() ?: 0L
-    val end = if (pieces[1].isBlank()) size - 1 else pieces[1].toLongOrNull() ?: return null
-    if (start < 0 || end < start || start >= size) return null
-    return start to max(start, minOf(end, size - 1))
+    if (size <= 0L) return null
+    val cleaned = header.trim()
+    if (!cleaned.startsWith("bytes=")) return null
+    val value = cleaned.removePrefix("bytes=").trim()
+    if (value.isEmpty() || value.contains(',')) return null // single-range only
+
+    val dashIndex = value.indexOf('-')
+    if (dashIndex < 0) return null
+
+    val startPart = value.substring(0, dashIndex).trim()
+    val endPart = value.substring(dashIndex + 1).trim()
+
+    if (startPart.isEmpty()) {
+        // RFC 7233 suffix-byte-range-spec: bytes=-N (last N bytes)
+        val suffixLength = endPart.toLongOrNull() ?: return null
+        if (suffixLength <= 0L) return null
+        val servedLength = minOf(suffixLength, size)
+        val start = size - servedLength
+        return start to (size - 1)
+    }
+
+    val start = startPart.toLongOrNull() ?: return null
+    if (start !in 0 until size) return null
+
+    if (endPart.isEmpty()) {
+        return start to (size - 1)
+    }
+
+    val end = endPart.toLongOrNull() ?: return null
+    if (end < start) return null
+    return start to minOf(end, size - 1)
 }
 
 data class ContentRange(val start: Long, val end: Long, val total: Long)
@@ -61,7 +89,7 @@ fun parseContentRange(header: String?): ContentRange? {
     val start = range[0].toLongOrNull() ?: return null
     val end = range[1].toLongOrNull() ?: return null
     val total = parts[1].toLongOrNull() ?: return null
-    if (start < 0 || end < start || total <= end) return null
+    if (start !in 0 until total || end < start || end >= total) return null
     return ContentRange(start, end, total)
 }
 
@@ -79,15 +107,28 @@ fun InputStream.skipFully(bytes: Long) {
 }
 
 fun localIpAddress(context: Context): String {
-    val manager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
-    val info = manager?.connectionInfo ?: return "0.0.0.0"
-    return Formatter.formatIpAddress(info.ipAddress)
-}
+    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    
+    val activeNetwork = connectivityManager.activeNetwork
+    val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+    if (capabilities != null && (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || 
+        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))) {
+        val linkProperties = connectivityManager.getLinkProperties(activeNetwork)
+        val ipAddress = linkProperties?.linkAddresses?.firstOrNull { it.address is java.net.Inet4Address }?.address?.hostAddress
+        if (ipAddress != null) return ipAddress
+    }
 
-fun wifiSsid(context: Context): String {
-    val manager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
-    val ssid = manager?.connectionInfo?.ssid ?: return "Unknown"
-    return ssid.trim('"')
+    val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+    @Suppress("DEPRECATION")
+    val ipInt = wifiManager?.connectionInfo?.ipAddress ?: 0
+    return if (ipInt == 0) "0.0.0.0" else String.format(
+        Locale.US,
+        "%d.%d.%d.%d",
+        ipInt and 0xff,
+        ipInt shr 8 and 0xff,
+        ipInt shr 16 and 0xff,
+        ipInt shr 24 and 0xff
+    )
 }
 
 fun resolveDownloadMimeType(fileName: String?, documentMimeType: String?): String {

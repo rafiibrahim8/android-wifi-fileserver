@@ -1,0 +1,33 @@
+[versions]
+agp = "9.1.0"
+nanohttpd = "2.3.1"
+androidx-documentfile = "1.1.0"
+zxing = "3.5.4"
+material = "1.13.0"
+androidx-core-ktx = "1.18.0"
+androidx-lifecycle = "2.10.0"
+androidx-appcompat = "1.7.1"
+androidx-activity-ktx = "1.13.0"
+androidx-fragment-ktx = "1.8.9"
+androidx-preference-ktx = "1.2.1"
+androidx-recyclerview = "1.4.0"
+androidx-constraintlayout = "2.2.1"
+
+[libraries]
+nanohttpd = { group = "org.nanohttpd", name = "nanohttpd", version.ref = "nanohttpd" }
+androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "androidx-documentfile" }
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
+androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "androidx-lifecycle" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
+androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "androidx-activity-ktx" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidx-fragment-ktx" }
+androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "androidx-preference-ktx" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "androidx-recyclerview" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }

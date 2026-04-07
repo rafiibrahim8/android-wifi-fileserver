@@ -1,12 +1,14 @@
 package me.ibrahimrafi.wififileshare.server
 
 import android.content.Context
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
-private val isoFormatter: DateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
+private val isoFormatter = ThreadLocal.withInitial {
+    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US)
+}
 private val inlineSvgCache = ConcurrentHashMap<String, String>()
 private val safeIconNamePattern = Regex("^[A-Za-z0-9_.-]+\\.svg$")
 
@@ -117,7 +119,10 @@ internal fun buildBreadcrumbTitle(currentPath: String, serverBase: String): Stri
 }
 
 private fun isoTime(epochMs: Long): String {
-    return isoFormatter.format(Instant.ofEpochMilli(epochMs).atZone(ZoneId.systemDefault()))
+    val formatter = isoFormatter.get() ?: SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US).also {
+        isoFormatter.set(it)
+    }
+    return formatter.format(Date(epochMs))
 }
 
 private fun inlineIconHtml(context: Context, iconFileName: String): String {

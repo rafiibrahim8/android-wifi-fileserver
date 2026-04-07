@@ -43,13 +43,16 @@ class TransferAdapter(
                     if (item.direction == Direction.DOWNLOAD) R.color.primary_dark else R.color.amber_upload,
                 ),
             )
-            detail.text = buildString {
-                append(if (item.direction == Direction.UPLOAD) "↓ " else "↑ ")
-                append("${formatBytes(item.transferredBytes)} / ${formatBytes(item.totalBytes)}")
-                append(" · ${formatRate(item.speedBps)}")
-                append(" · ${item.clientIp}")
-                append(" · ${statusLabel(item.status)}")
-            }
+            val directionSymbol = if (item.direction == Direction.UPLOAD) "↓" else "↑"
+            detail.text = itemView.context.getString(
+                R.string.transfer_detail_format,
+                directionSymbol,
+                formatBytes(item.transferredBytes),
+                formatBytes(item.totalBytes),
+                formatRate(item.speedBps),
+                item.clientIp,
+                statusLabel(item.status),
+            )
             progress.visibility = if (
                 item.status == TransferStatus.FAILED ||
                 item.status == TransferStatus.CANCELLED
@@ -84,10 +87,10 @@ class TransferAdapter(
 
         private fun statusLabel(status: TransferStatus): String {
             return when (status) {
-                TransferStatus.ACTIVE -> "Active"
-                TransferStatus.COMPLETED -> "Completed"
-                TransferStatus.FAILED -> "Failed"
-                TransferStatus.CANCELLED -> "Cancelled"
+                TransferStatus.ACTIVE -> itemView.context.getString(R.string.transfer_status_active)
+                TransferStatus.COMPLETED -> itemView.context.getString(R.string.transfer_status_completed)
+                TransferStatus.FAILED -> itemView.context.getString(R.string.transfer_status_failed)
+                TransferStatus.CANCELLED -> itemView.context.getString(R.string.transfer_status_cancelled)
             }
         }
     }

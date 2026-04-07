@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -60,14 +59,14 @@ class FileServerService : LifecycleService() {
             ACTION_STOP -> {
                 stopServer()
                 stopSelf()
-                return Service.START_NOT_STICKY
+                return START_NOT_STICKY
             }
             ACTION_START, null -> startServerIfNeeded()
         }
         startForeground(NOTIFICATION_ID, buildNotification())
         notifier.removeCallbacks(updateNotificationRunnable)
         notifier.post(updateNotificationRunnable)
-        return Service.START_STICKY
+        return START_STICKY
     }
 
     private fun startServerIfNeeded() {
@@ -98,7 +97,6 @@ class FileServerService : LifecycleService() {
         val url = "http://${localIpAddress(this)}:${config.port}"
         ServerStateStore.setRunning(true)
         ServerStateStore.setUrl(url)
-        ServerStateStore.setNetworkName(wifiSsid(this))
         copyUrlToClipboard(url)
     }
 
@@ -110,13 +108,7 @@ class FileServerService : LifecycleService() {
         notifier.removeCallbacks(updateNotificationRunnable)
         ServerStateStore.setRunning(false)
         ServerStateStore.clearTransfers()
-        ServerStateStore.setNetworkName("No Wi-Fi")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(Service.STOP_FOREGROUND_REMOVE)
-        } else {
-            @Suppress("DEPRECATION")
-            stopForeground(true)
-        }
+        stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
     override fun onDestroy() {
@@ -160,7 +152,7 @@ class FileServerService : LifecycleService() {
     }
 
     private fun copyUrlToClipboard(url: String) {
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(ClipData.newPlainText("WiFi File Share URL", url))
         Toast.makeText(this, getString(R.string.url_copied), Toast.LENGTH_SHORT).show()
     }

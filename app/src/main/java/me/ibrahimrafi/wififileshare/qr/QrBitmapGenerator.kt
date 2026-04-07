@@ -6,6 +6,8 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.set
 
 object QrBitmapGenerator {
     fun generateQrBitmap(text: String, sizePx: Int): Bitmap {
@@ -21,10 +23,10 @@ object QrBitmapGenerator {
             hints,
         )
 
-        val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.RGB_565)
+        val bitmap = createBitmap(sizePx, sizePx, Bitmap.Config.RGB_565)
         for (y in 0 until sizePx) {
             for (x in 0 until sizePx) {
-                bitmap.setPixel(x, y, if (matrix[x, y]) Color.BLACK else Color.WHITE)
+                bitmap[x, y] = if (matrix[x, y]) Color.BLACK else Color.WHITE
             }
         }
         return bitmap

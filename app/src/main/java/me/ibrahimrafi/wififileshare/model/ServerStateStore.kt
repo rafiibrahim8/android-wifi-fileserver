@@ -11,16 +11,13 @@ object ServerStateStore {
     private val _url = MutableLiveData(ServerConfig.defaultLocalUrl())
     val url: LiveData<String> = _url
 
-    private val _networkName = MutableLiveData("Unknown")
-    val networkName: LiveData<String> = _networkName
-
     private val _transfers = MutableLiveData<List<TransferItem>>(emptyList())
     val transfers: LiveData<List<TransferItem>> = _transfers
 
     private val _logs = MutableLiveData<List<LogEntry>>(emptyList())
     val logs: LiveData<List<LogEntry>> = _logs
 
-    private val maxLogs = 500
+    private const val MAX_LOGS = 500
     private val logDeque = ArrayDeque<LogEntry>()
 
     fun setRunning(running: Boolean) {
@@ -29,10 +26,6 @@ object ServerStateStore {
 
     fun setUrl(url: String) {
         _url.postValue(url)
-    }
-
-    fun setNetworkName(name: String) {
-        _networkName.postValue(name)
     }
 
     fun upsertTransfer(item: TransferItem) {
@@ -65,7 +58,7 @@ object ServerStateStore {
     }
 
     fun addLog(entry: LogEntry) {
-        if (logDeque.size >= maxLogs) {
+        if (logDeque.size >= MAX_LOGS) {
             logDeque.removeFirst()
         }
         logDeque.addLast(entry)

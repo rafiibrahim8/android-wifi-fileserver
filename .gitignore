@@ -1,5 +1,6 @@
 # Android/Gradle build outputs
 .gradle/
+.kotlin/
 build/
 **/build/
 release/

@@ -120,7 +120,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             val active = transfers.filter { it.status == TransferStatus.ACTIVE }
             val outgoingFromPhone = active.filter { it.direction == Direction.DOWNLOAD }.sumOf { it.speedBps }
             val incomingToPhone = active.filter { it.direction == Direction.UPLOAD }.sumOf { it.speedBps }
-            quickStats.text = "↑ ${formatRate(outgoingFromPhone)}    ↓ ${formatRate(incomingToPhone)}"
+            quickStats.text = getString(
+                R.string.home_quick_stats_format,
+                formatRate(outgoingFromPhone),
+                formatRate(incomingToPhone),
+            )
         }
     }
 

@@ -46,9 +46,15 @@
     <string name="home_qr_label">Scan to Connect</string>
     <string name="qr_placeholder">Start server to show QR code</string>
     <string name="home_speed_label">Live Throughput</string>
+    <string name="home_quick_stats_format">↑ %1$s    ↓ %2$s</string>
     <string name="transfers_header_title">Transfers</string>
     <string name="transfers_header_subtitle">Track upload and download sessions</string>
     <string name="transfers_empty">No transfer history yet</string>
+    <string name="transfer_detail_format">%1$s %2$s / %3$s · %4$s · %5$s · %6$s</string>
+    <string name="transfer_status_active">Active</string>
+    <string name="transfer_status_completed">Completed</string>
+    <string name="transfer_status_failed">Failed</string>
+    <string name="transfer_status_cancelled">Cancelled</string>
     <string name="settings_header_title">Settings</string>
     <string name="settings_header_subtitle">Configure server behavior and preferences</string>
     <string name="shortcut_start_server">Start Server</string>
