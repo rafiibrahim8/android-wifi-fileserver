@@ -1,14 +1,24 @@
 <resources>
-    <color name="seed">#006ED3</color>
-    <color name="surface_dark">#101720</color>
-    <color name="surface_variant_dark">#162030</color>
-    <color name="primary_dark">#006ED3</color>
-    <color name="on_primary_dark">#FFFFFF</color>
-    <color name="secondary_dark">#9FC0E0</color>
-    <color name="error_dark">#D9534F</color>
-    <color name="success_dark">#2AB37A</color>
-    <color name="surface_light">#FFFFFF</color>
-    <color name="primary_light">#006ED3</color>
-    <color name="amber_upload">#FFB900</color>
-    <color name="rose_stop">#D9534F</color>
+    <!-- Theme-aware palette (overridden in values-night) -->
+    <color name="bg">#F3F1EC</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F7F5F0</color>
+    <color name="line">#E7E3DA</color>
+    <color name="ink">#1A1A1C</color>
+    <color name="ink_2">#57575C</color>
+    <color name="ink_3">#8A8A90</color>
+
+    <color name="accent">#2D5CF6</color>
+    <color name="accent_soft">#E6ECFF</color>
+    <color name="success">#1F9D55</color>
+    <color name="success_soft">#DEF5E6</color>
+    <color name="danger">#D4574A</color>
+    <color name="danger_soft">#F8E1DE</color>
+    <color name="warn">#E0A82E</color>
+    <color name="warn_soft">#FAEFD2</color>
+
+    <!-- Text/icon color on top of solid accent/danger fills.
+         Both fills stay dark enough across themes that white reads cleanly. -->
+    <color name="on_filled_button">#FFFFFF</color>
+
 </resources>

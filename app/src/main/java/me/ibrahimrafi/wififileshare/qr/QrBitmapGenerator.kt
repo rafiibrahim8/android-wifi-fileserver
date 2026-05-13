@@ -19,13 +19,22 @@ object QrBitmapGenerator {
     private const val CIRCLE_SCALE_DOWN_FACTOR = 0.72f
     private const val BACKGROUND_CORNER_RADIUS_RATIO = 0.08f
 
+    @Volatile private var cachedKey: String? = null
+    @Volatile private var cachedBitmap: Bitmap? = null
+
     fun generateQrBitmap(text: String, sizePx: Int): Bitmap {
+        val key = "$sizePx:$text"
+        cachedBitmap?.takeIf { cachedKey == key }?.let { return it }
+
         val hints = mapOf(
             EncodeHintType.CHARACTER_SET to "UTF-8",
             EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.H,
         )
         val code = Encoder.encode(text, ErrorCorrectionLevel.H, hints)
-        return renderDottedQr(code, sizePx, sizePx)
+        val bitmap = renderDottedQr(code, sizePx, sizePx)
+        cachedKey = key
+        cachedBitmap = bitmap
+        return bitmap
     }
 
     private fun renderDottedQr(code: QRCode, width: Int, height: Int): Bitmap {

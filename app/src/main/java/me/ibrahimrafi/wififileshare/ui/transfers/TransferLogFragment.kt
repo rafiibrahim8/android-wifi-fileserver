@@ -3,15 +3,21 @@ package me.ibrahimrafi.wififileshare.ui.transfers
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import me.ibrahimrafi.wififileshare.ui.snack
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.chip.Chip
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.ibrahimrafi.wififileshare.R
 import me.ibrahimrafi.wififileshare.model.Direction
-import me.ibrahimrafi.wififileshare.model.ServerStateStore
 import me.ibrahimrafi.wififileshare.model.TransferItem
 import me.ibrahimrafi.wififileshare.model.TransferStatus
 import me.ibrahimrafi.wififileshare.storage.ServerPreferences
@@ -20,6 +26,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class TransferLogFragment : Fragment(R.layout.fragment_transfers) {
+    private val viewModel: TransferLogViewModel by viewModels()
     private val adapter = TransferAdapter { item -> cancelUpload(item) }
     private var allTransfers: List<TransferItem> = emptyList()
 
@@ -33,8 +40,8 @@ class TransferLogFragment : Fragment(R.layout.fragment_transfers) {
 
         val clearButton = view.findViewById<View>(R.id.clear_button)
         clearButton.setOnClickListener {
-            ServerStateStore.clearTransfers()
-            ServerStateStore.clearLogs()
+            viewModel.clearTransfers()
+            viewModel.clearLogs()
         }
 
         val chipAll = view.findViewById<Chip>(R.id.chip_all)
@@ -61,7 +68,7 @@ class TransferLogFragment : Fragment(R.layout.fragment_transfers) {
             chip.setOnCheckedChangeListener { _, _ -> applyFilter() }
         }
 
-        ServerStateStore.transfers.observe(viewLifecycleOwner) {
+        viewModel.transfers.observe(viewLifecycleOwner) {
             allTransfers = it
             applyFilter()
         }
@@ -75,7 +82,7 @@ class TransferLogFragment : Fragment(R.layout.fragment_transfers) {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val item = adapter.currentList.getOrNull(viewHolder.bindingAdapterPosition) ?: return
-                ServerStateStore.removeTransfer(item.id)
+                viewModel.removeTransfer(item.id)
             }
         }).attachToRecyclerView(recycler)
     }
@@ -84,19 +91,48 @@ class TransferLogFragment : Fragment(R.layout.fragment_transfers) {
         val ctx = context ?: return
         val port = ServerPreferences(ctx).getConfig().port
         val encodedPath = percentEncodePath(item.relativePath)
-        Thread {
-            runCatching {
-                val url = URL("http://127.0.0.1:$port/upload-cancel/$encodedPath")
-                val connection = (url.openConnection() as HttpURLConnection).apply {
-                    requestMethod = "POST"
-                    connectTimeout = 3_000
-                    readTimeout = 5_000
-                    doOutput = true
-                }
-                connection.outputStream.use { }
-                connection.responseCode
-                connection.disconnect()
+        val targetUrl = "http://127.0.0.1:$port/upload-cancel/$encodedPath"
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            val ok = withContext(Dispatchers.IO) {
+                sendCancelWithRetry(targetUrl)
             }
-        }.start()
+            if (!ok) {
+                snack(R.string.cancel_upload_failed)
+            }
+        }
+    }
+
+    private suspend fun sendCancelWithRetry(targetUrl: String): Boolean {
+        var attempt = 0
+        var backoff = 400L
+        while (attempt < CANCEL_MAX_ATTEMPTS) {
+            val code = postCancel(targetUrl)
+            if (code in 200..299 || code == 404) return true
+            attempt++
+            if (attempt >= CANCEL_MAX_ATTEMPTS) return false
+            delay(backoff)
+            backoff *= 2
+        }
+        return false
+    }
+
+    private fun postCancel(targetUrl: String): Int {
+        return runCatching {
+            val connection = (URL(targetUrl).openConnection() as HttpURLConnection).apply {
+                requestMethod = "POST"
+                connectTimeout = 3_000
+                readTimeout = 5_000
+                doOutput = true
+            }
+            connection.outputStream.use { }
+            val code = connection.responseCode
+            connection.disconnect()
+            code
+        }.getOrDefault(-1)
+    }
+
+    companion object {
+        private const val CANCEL_MAX_ATTEMPTS = 3
     }
 }

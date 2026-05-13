@@ -62,14 +62,19 @@ class DownloadHandler(
     ): InputStream {
         val raw = context.contentResolver.openInputStream(doc.uri)
             ?: throw IOException("Unable to open stream")
-        raw.skipFully(skip)
-        val bounded: InputStream = BoundedInputStream(raw, length)
-        val rateLimited = if (maxSpeedBps > 0L && maxSpeedBps != Long.MAX_VALUE) {
-            RateLimitedInputStream(bounded, maxSpeedBps)
-        } else {
-            bounded
+        try {
+            raw.skipFully(skip)
+            val bounded: InputStream = BoundedInputStream(raw, length)
+            val rateLimited = if (maxSpeedBps > 0L && maxSpeedBps != Long.MAX_VALUE) {
+                RateLimitedInputStream(bounded, maxSpeedBps)
+            } else {
+                bounded
+            }
+            return if (onProgress != null) ProgressInputStream(rateLimited, length, onProgress) else rateLimited
+        } catch (t: Throwable) {
+            runCatching { raw.close() }
+            throw t
         }
-        return if (onProgress != null) ProgressInputStream(rateLimited, length, onProgress) else rateLimited
     }
 }
 

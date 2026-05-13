@@ -8,11 +8,13 @@ data class ServerConfig(
     val userId: String = "",
     val password: String = "",
     val readOnlyFileserver: Boolean = false,
+    val dropBoxMode: Boolean = false,
     val allowUploads: Boolean = true,
     val allowZipDownload: Boolean = false,
     val showHiddenFiles: Boolean = false,
     val maxSpeedBps: Long = 0L,
     val uploadSizeLimitBytes: Long = 4L * 1024L * 1024L * 1024L,
+    val idleTimeoutMs: Long = 0L,
     val rootUri: Uri? = null,
 ) {
     companion object {

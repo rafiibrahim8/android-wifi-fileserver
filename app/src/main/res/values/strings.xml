@@ -1,25 +1,54 @@
 <resources>
     <string name="app_name">WiFi File Share</string>
+
+    <!-- Bottom nav -->
     <string name="home">Home</string>
     <string name="transfers">Transfers</string>
     <string name="settings">Settings</string>
+
+    <!-- Home -->
+    <string name="home_title_line1">Sharing</string>
+    <string name="home_title_line2_on">on your network</string>
+    <string name="home_title_line2_off">is off right now</string>
+    <string name="home_outgoing_label">Outgoing</string>
+    <string name="home_incoming_label">Incoming</string>
+    <string name="home_no_active">No active transfer</string>
+    <plurals name="home_active_transfers">
+        <item quantity="one">%d active transfer</item>
+        <item quantity="other">%d active transfers</item>
+    </plurals>
+    <string name="stat_default_rate">0 B/s</string>
+
+    <!-- Status pill labels -->
+    <string name="status_running">Running</string>
+    <string name="status_starting">Starting</string>
+    <string name="status_stopped">Stopped</string>
+    <string name="server_running">SERVER RUNNING</string>
+    <string name="server_not_running">SERVER STOPPED</string>
+
+    <!-- Start/stop -->
     <string name="start_server">Start Server</string>
     <string name="stop_server">Stop Server</string>
-    <string name="server_stopped">Server stopped</string>
-    <string name="server_running">SERVER RUNNING</string>
-    <string name="server_starting">SERVER STARTING</string>
-    <string name="server_not_running">SERVER STOPPED</string>
-    <string name="starting_server">Starting...</string>
-    <string name="network_unknown">Network: Unknown</string>
-    <string name="no_wifi">No Wi-Fi</string>
+    <string name="starting_server">Starting…</string>
+
+    <!-- QR / URL -->
+    <string name="qr_placeholder">Start server to show QR code</string>
     <string name="copy">Copy</string>
-    <string name="choose_folder">Choose folder</string>
+    <string name="url_copied">URL copied to clipboard</string>
+    <string name="clip_label_url">WiFi File Share URL</string>
+
+    <!-- Folder selection -->
     <string name="folder_not_selected">No folder selected</string>
+
+    <!-- Notification -->
     <string name="notif_channel_name">File server</string>
     <string name="notif_channel_description">Shows running file server status</string>
-    <string name="notif_title">WiFi File Share - Running</string>
+    <string name="notif_title">WiFi File Share — Running</string>
     <string name="notif_action_stop">Stop Server</string>
-    <string name="url_copied">URL copied to clipboard</string>
+    <string name="notif_active_transfers">%1$s · %2$d active transfers</string>
+    <string name="notif_no_active_transfers">%1$s · No active transfers</string>
+
+    <!-- Preferences -->
     <string name="pref_port_title">Port number</string>
     <string name="pref_anon_title">Anonymous access</string>
     <string name="pref_user_title">User ID</string>
@@ -30,8 +59,27 @@
     <string name="pref_upload_disabled_by_read_only">Disabled while Read Only Fileserver is enabled</string>
     <string name="pref_upload_title">Allow uploads</string>
     <string name="pref_zip_title">Allow ZIP download</string>
+    <string name="pref_zip_summary">ZIP downloads are CPU-intensive on large directories.</string>
     <string name="pref_hidden_title">Show hidden files</string>
     <string name="pref_speed_title">Max speed</string>
+    <string name="pref_idle_timeout_title">Auto-stop when idle</string>
+    <string name="pref_drop_box_title">Drop-box mode</string>
+    <string name="pref_drop_box_summary">Hide the file list and accept only uploads.</string>
+    <string name="setup_title">Pick a folder to share</string>
+    <string name="setup_subtitle">Choose any folder on your device. Anyone on this Wi-Fi can browse and download what\'s inside.</string>
+    <string name="setup_choose_folder">Choose folder</string>
+    <string name="onboarding_title">Share files\nover Wi-Fi</string>
+    <string name="onboarding_subtitle">Turn your phone into a tiny private file server. No accounts, no cloud — anyone on your network can grab files from a browser.</string>
+    <string name="onboarding_point_1_title">Choose what to share</string>
+    <string name="onboarding_point_1_body">Pick any folder on your device. Only that folder is exposed.</string>
+    <string name="onboarding_point_2_title">Scan to connect</string>
+    <string name="onboarding_point_2_body">A QR code shows up on the home screen. Phones in the room scan it and start downloading.</string>
+    <string name="onboarding_point_3_title">Stop anytime</string>
+    <string name="onboarding_point_3_body">The server runs only while you say so — auto-stop on idle is one tap away in Settings.</string>
+    <string name="onboarding_get_started">Get started</string>
+    <string name="onboarding_skip">Skip</string>
+
+    <!-- Transfers screen -->
     <string name="all">All</string>
     <string name="downloads">Downloads</string>
     <string name="uploads">Uploads</string>
@@ -39,23 +87,31 @@
     <string name="failed">Failed</string>
     <string name="cancelled">Cancelled</string>
     <string name="clear_all">Clear All</string>
-    <string name="home_header_title">WiFi File Share</string>
-    <string name="home_header_subtitle">Quick access to your local phone storage over Wi-Fi</string>
-    <string name="home_qr_label">Scan to Connect</string>
-    <string name="qr_placeholder">Start server to show QR code</string>
-    <string name="home_speed_label">Live Throughput</string>
-    <string name="home_quick_stats_format">↑ %1$s    ↓ %2$s</string>
-    <string name="transfers_header_title">Transfers</string>
-    <string name="transfers_header_subtitle">Track upload and download sessions</string>
     <string name="transfers_empty">No transfer history yet</string>
-    <string name="transfer_detail_format">%1$s %2$s / %3$s · %4$s · %5$s · %6$s</string>
-    <string name="transfer_status_active">Active</string>
+    <string name="transfer_detail_active">%1$s · %2$d%% · %3$s / %4$s</string>
+    <string name="transfer_detail_done">%1$s · %2$s</string>
     <string name="transfer_status_completed">Completed</string>
     <string name="transfer_status_failed">Failed</string>
     <string name="transfer_status_cancelled">Cancelled</string>
-    <string name="settings_header_title">Settings</string>
-    <string name="settings_header_subtitle">Configure server behavior and preferences</string>
+    <string name="cancel_upload_failed">Could not cancel upload</string>
+    <string name="server_start_failed">Could not start server</string>
+
+    <!-- Settings -->
     <string name="settings_restart_hint">Changes will apply after restarting the server.</string>
+
+    <!-- Shortcuts -->
     <string name="shortcut_start_server">Start Server</string>
     <string name="shortcut_start_server_long">Start WiFi File Share Server</string>
+
+    <!-- Accessibility content descriptions -->
+    <string name="cd_qr_code">Scannable QR code for the server URL</string>
+    <string name="cd_transfer_download">Outgoing download</string>
+    <string name="cd_transfer_upload">Incoming upload</string>
+    <string name="cd_transfer_completed">Completed transfer</string>
+    <string name="cd_transfer_failed">Failed transfer</string>
+    <string name="cd_transfer_cancelled">Cancelled transfer</string>
+    <string name="cd_cancel_upload">Cancel this upload</string>
+    <string name="cd_copy_url">Copy URL to clipboard</string>
+    <string name="cd_status_running">Server running</string>
+    <string name="cd_status_stopped">Server stopped</string>
 </resources>

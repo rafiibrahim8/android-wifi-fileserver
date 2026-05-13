@@ -2,6 +2,10 @@ package me.ibrahimrafi.wififileshare.server
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.os.StatFs
+import android.os.storage.StorageManager
 import androidx.documentfile.provider.DocumentFile
 import fi.iki.elonen.NanoHTTPD
 import java.io.EOFException
@@ -12,6 +16,11 @@ import java.util.concurrent.ConcurrentHashMap
 private object PayloadTooLargeStatus : NanoHTTPD.Response.IStatus {
     override fun getRequestStatus(): Int = 413
     override fun getDescription(): String = "413 Payload Too Large"
+}
+
+private object InsufficientStorageStatus : NanoHTTPD.Response.IStatus {
+    override fun getRequestStatus(): Int = 507
+    override fun getDescription(): String = "507 Insufficient Storage"
 }
 
 private data class PartialUpload(
@@ -30,6 +39,8 @@ class UploadHandler(
     private val partialUploads = ConcurrentHashMap<String, PartialUpload>()
     private val canceledUploads = ConcurrentHashMap.newKeySet<String>()
 
+    private fun partNameFor(fileName: String): String = "$fileName$PART_SUFFIX"
+
     fun cancelUpload(relativePath: String): Boolean {
         val cleanedPath = normalizePath(relativePath)
         if (cleanedPath.isEmpty()) return false
@@ -43,7 +54,7 @@ class UploadHandler(
             runCatching { context.contentResolver.delete(it.uri, null, null) > 0 }
         }
 
-        parent?.findFile("$fileName.part")?.let {
+        parent?.findFile(partNameFor(fileName))?.let {
             it.delete()
         }
 
@@ -89,7 +100,20 @@ class UploadHandler(
             )
         }
 
-        val partName = "$fileName.part"
+        // Cheap free-space check: reject obviously impossible uploads before opening any stream.
+        // Conservative — relies on primary external storage as a proxy; some SAF roots live
+        // elsewhere, in which case the check is skipped via best-effort fallback.
+        val freeBytes = availableStorageBytes()
+        val remainingNeeded = totalUploadSize - (contentRange?.start ?: 0L)
+        if (freeBytes > 0L && remainingNeeded > 0L && remainingNeeded > freeBytes) {
+            return NanoHTTPD.newFixedLengthResponse(
+                InsufficientStorageStatus,
+                NanoHTTPD.MIME_PLAINTEXT,
+                "Not enough free space",
+            )
+        }
+
+        val partName = partNameFor(fileName)
 
         val targetDoc = if (contentRange == null) {
             parent.findFile(fileName)?.also { it.delete() }
@@ -228,11 +252,69 @@ class UploadHandler(
             runCatching { context.contentResolver.delete(it.uri, null, null) }
         }
         val fileName = cleanedPath.lastOrNull() ?: return
-        resolveExistingDirectories(cleanedPath.dropLast(1))?.findFile("$fileName.part")?.delete()
+        resolveExistingDirectories(cleanedPath.dropLast(1))?.findFile(partNameFor(fileName))?.delete()
         canceledUploads.remove(key)
     }
 
     private fun normalizePath(relativePath: String): List<String> {
         return relativePath.trim('/').split('/').filter { it.isNotBlank() }
+    }
+
+    /**
+     * Best-effort free-space query for the volume backing the SAF root. Returns -1 when
+     * unknown so callers don't gate on the result.
+     *
+     * On API 30+ we resolve the actual [StorageVolume] for the root URI; older builds fall
+     * back to primary external storage, which is right in the common case and harmless
+     * (over-cautious) when the user picked an SD card.
+     */
+    private fun availableStorageBytes(): Long {
+        return runCatching {
+            val path = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val sm = context.getSystemService(Context.STORAGE_SERVICE) as? StorageManager
+                sm?.getStorageVolume(root.uri)?.directory?.path
+                    ?: Environment.getExternalStorageDirectory()?.path
+            } else {
+                Environment.getExternalStorageDirectory()?.path
+            } ?: return@runCatching -1L
+            StatFs(path).availableBytes
+        }.getOrDefault(-1L)
+    }
+
+    /**
+     * Recursively delete partial-upload sidecar files older than [maxAgeMs]. Only matches
+     * files with our own [PART_SUFFIX] so files the user happens to name `*.part` are left
+     * alone. Intended to be called once per server start. Returns the number of files removed.
+     */
+    fun sweepStalePartials(maxAgeMs: Long = 24L * 60L * 60L * 1000L): Int {
+        val cutoff = System.currentTimeMillis() - maxAgeMs
+        var removed = 0
+        sweep(root, cutoff, depth = 0) { removed++ }
+        return removed
+    }
+
+    private fun sweep(dir: DocumentFile, cutoff: Long, depth: Int, onRemove: () -> Unit) {
+        if (depth > MAX_SWEEP_DEPTH) return
+        val children = runCatching { dir.listFiles() }.getOrDefault(emptyArray())
+        for (child in children) {
+            if (child.isDirectory) {
+                sweep(child, cutoff, depth + 1, onRemove)
+                continue
+            }
+            val name = child.name ?: continue
+            if (!name.endsWith(PART_SUFFIX)) continue
+            val modified = runCatching { child.lastModified() }.getOrDefault(0L)
+            if (modified in 1 until cutoff) {
+                if (runCatching { child.delete() }.getOrDefault(false)) onRemove()
+            }
+        }
+    }
+
+    companion object {
+        private const val MAX_SWEEP_DEPTH = 32
+
+        // Distinctive sidecar suffix so the sweep never touches user files that happen to
+        // end in `.part`. Visible to clients during resumable uploads, then renamed away.
+        private const val PART_SUFFIX = ".wifishare.part"
     }
 }

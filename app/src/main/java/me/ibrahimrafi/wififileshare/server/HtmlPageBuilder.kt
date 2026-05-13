@@ -12,6 +12,7 @@ object HtmlPageBuilder {
         allowCreateFolder: Boolean,
         allowDelete: Boolean,
         allowZipDownload: Boolean,
+        dropBoxMode: Boolean,
         entries: List<DirectoryEntry>,
     ): String {
         val filesCount = entries.count { !it.isDirectory }
@@ -21,13 +22,19 @@ object HtmlPageBuilder {
         val rows = buildRows(context, currentPath, serverBase, entries)
 
         val uploadControls = if (allowUploads) {
-            "<button id=\"upload-btn\" class=\"btn\">Upload Files</button>"
+            """
+            <button id="upload-btn" class="btn">Upload Files</button>
+            <button id="upload-folder-btn" class="btn">Upload Folder</button>
+            """.trimIndent()
         } else {
             ""
         }
 
         val uploadInput = if (allowUploads) {
-            "<input type=\"file\" id=\"file-input\" multiple />"
+            """
+            <input type="file" id="file-input" multiple />
+            <input type="file" id="folder-input" webkitdirectory directory multiple />
+            """.trimIndent()
         } else {
             ""
         }
@@ -38,8 +45,14 @@ object HtmlPageBuilder {
             ""
         }
 
-        val deleteToggleButton = if (allowDelete) {
-            "<button id=\"delete-toggle\" class=\"btn btn-danger\">Delete</button>"
+        val canSelectAnything = allowDelete || allowZipDownload
+        val selectToggleButton = if (canSelectAnything) {
+            "<button id=\"select-toggle\" class=\"btn\">Select</button>"
+        } else {
+            ""
+        }
+        val deleteConfirmInDock = if (allowDelete) {
+            "<button id=\"delete-confirm\" class=\"btn btn-danger\">Delete</button>"
         } else {
             ""
         }
@@ -57,6 +70,12 @@ object HtmlPageBuilder {
             ""
         }
 
+        val bulkZipButton = if (allowZipDownload) {
+            "<button id=\"download-zip\" class=\"btn\">Download ZIP</button>"
+        } else {
+            ""
+        }
+
         return buildWebUiTemplate(
             currentPath = currentPath,
             allowUploads = allowUploads,
@@ -68,9 +87,12 @@ object HtmlPageBuilder {
             uploadControls = uploadControls,
             uploadInput = uploadInput,
             cancelUploadButton = cancelUploadButton,
-            deleteToggleButton = deleteToggleButton,
+            selectToggleButton = selectToggleButton,
             createFolderButton = createFolderButton,
             zipSection = zipSection,
+            bulkZipButton = bulkZipButton,
+            deleteConfirmButton = deleteConfirmInDock,
+            dropBoxMode = dropBoxMode,
         )
     }
 }

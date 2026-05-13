@@ -8,10 +8,12 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.PowerManager
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -24,6 +26,8 @@ import me.ibrahimrafi.wififileshare.model.TransferStatus
 import me.ibrahimrafi.wififileshare.network.NetworkMonitor
 import me.ibrahimrafi.wififileshare.network.NsdAdvertiser
 import me.ibrahimrafi.wififileshare.storage.ServerPreferences
+import me.ibrahimrafi.wififileshare.widget.ServerWidgetProvider
+import timber.log.Timber
 
 class FileServerService : LifecycleService() {
     private var server: WiFiFileServer? = null
@@ -32,6 +36,22 @@ class FileServerService : LifecycleService() {
     private lateinit var advertiser: NsdAdvertiser
 
     private val notifier = Handler(Looper.getMainLooper())
+    private var wakeLock: PowerManager.WakeLock? = null
+    private var wifiLock: WifiManager.WifiLock? = null
+    private var idleTimeoutMs: Long = 0L
+    private val idleChecker = object : Runnable {
+        override fun run() {
+            val srv = server ?: return
+            val timeout = idleTimeoutMs
+            if (timeout > 0L && System.currentTimeMillis() - srv.lastActivity >= timeout) {
+                Timber.i("Auto-stopping after %d ms of idle", timeout)
+                stopServer()
+                stopSelf()
+                return
+            }
+            notifier.postDelayed(this, IDLE_CHECK_INTERVAL_MS)
+        }
+    }
     private val updateNotificationRunnable = object : Runnable {
         override fun run() {
             if (server != null) {
@@ -80,13 +100,15 @@ class FileServerService : LifecycleService() {
         }
 
         val instance = runCatching { WiFiFileServer(this, config) }.getOrElse {
-            Toast.makeText(this, it.message ?: "Could not start server", Toast.LENGTH_LONG).show()
+            Timber.e(it, "Failed to construct WiFiFileServer")
+            Toast.makeText(this, it.message ?: getString(R.string.server_start_failed), Toast.LENGTH_LONG).show()
             stopSelf()
             return
         }
 
         runCatching { instance.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false) }.onFailure {
-            Toast.makeText(this, it.message ?: "Could not start server", Toast.LENGTH_LONG).show()
+            Timber.e(it, "WiFiFileServer.start() failed on port ${config.port}")
+            Toast.makeText(this, it.message ?: getString(R.string.server_start_failed), Toast.LENGTH_LONG).show()
             stopSelf()
             return
         }
@@ -94,10 +116,22 @@ class FileServerService : LifecycleService() {
         server = instance
         networkMonitor.start()
         advertiser.start(config.port)
+        acquireLocks()
+        idleTimeoutMs = config.idleTimeoutMs
+        if (idleTimeoutMs > 0L) {
+            notifier.removeCallbacks(idleChecker)
+            notifier.postDelayed(idleChecker, IDLE_CHECK_INTERVAL_MS)
+        }
         val url = "http://${localIpAddress(this)}:${config.port}"
         ServerStateStore.setRunning(true)
         ServerStateStore.setUrl(url)
+        ServerWidgetProvider.updateAll(this)
         copyUrlToClipboard(url)
+        Thread {
+            runCatching { instance.sweepStalePartials() }
+                .onSuccess { Timber.i("Swept %d stale .part files", it) }
+                .onFailure { Timber.w(it, "Failed to sweep .part files") }
+        }.start()
     }
 
     private fun stopServer() {
@@ -105,9 +139,15 @@ class FileServerService : LifecycleService() {
         server = null
         runCatching { networkMonitor.stop() }
         runCatching { advertiser.stop() }
+        releaseLocks()
         notifier.removeCallbacks(updateNotificationRunnable)
+        notifier.removeCallbacks(idleChecker)
         ServerStateStore.setRunning(false)
-        ServerStateStore.clearTransfers()
+        // Don't wipe history; cancel anything that was still in flight so the list reflects reality.
+        ServerStateStore.transfersFlow.value
+            .filter { it.status == TransferStatus.ACTIVE }
+            .forEach { ServerStateStore.upsertTransfer(it.copy(speedBps = 0L, status = TransferStatus.CANCELLED)) }
+        ServerWidgetProvider.updateAll(this)
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
@@ -124,7 +164,11 @@ class FileServerService : LifecycleService() {
         val config = prefs.getConfig()
         val url = "http://${localIpAddress(this)}:${config.port}"
         val activeTransfers = ServerStateStore.transfers.value.orEmpty().count { it.status == TransferStatus.ACTIVE }
-        val text = if (activeTransfers > 0) "$url · $activeTransfers active transfers" else "$url · No active transfers"
+        val text = if (activeTransfers > 0) {
+            getString(R.string.notif_active_transfers, url, activeTransfers)
+        } else {
+            getString(R.string.notif_no_active_transfers, url)
+        }
 
         val openIntent = PendingIntent.getActivity(
             this,
@@ -153,8 +197,39 @@ class FileServerService : LifecycleService() {
 
     private fun copyUrlToClipboard(url: String) {
         val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-        clipboard.setPrimaryClip(ClipData.newPlainText("WiFi File Share URL", url))
+        clipboard.setPrimaryClip(ClipData.newPlainText(getString(R.string.clip_label_url), url))
         Toast.makeText(this, getString(R.string.url_copied), Toast.LENGTH_SHORT).show()
+    }
+
+    private fun acquireLocks() {
+        runCatching {
+            val pm = getSystemService(POWER_SERVICE) as PowerManager
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "wifishare:server").apply {
+                setReferenceCounted(false)
+                acquire()
+            }
+        }.onFailure { Timber.w(it, "Failed to acquire wake lock") }
+
+        runCatching {
+            val wm = applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
+            val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                WifiManager.WIFI_MODE_FULL_HIGH_PERF
+            } else {
+                @Suppress("DEPRECATION")
+                WifiManager.WIFI_MODE_FULL
+            }
+            wifiLock = wm.createWifiLock(mode, "wifishare:server").apply {
+                setReferenceCounted(false)
+                acquire()
+            }
+        }.onFailure { Timber.w(it, "Failed to acquire Wi-Fi lock") }
+    }
+
+    private fun releaseLocks() {
+        runCatching { wakeLock?.takeIf { it.isHeld }?.release() }
+        runCatching { wifiLock?.takeIf { it.isHeld }?.release() }
+        wakeLock = null
+        wifiLock = null
     }
 
     private fun createChannel() {
@@ -173,6 +248,7 @@ class FileServerService : LifecycleService() {
     companion object {
         private const val CHANNEL_ID = "file_server_channel"
         private const val NOTIFICATION_ID = 301
+        private const val IDLE_CHECK_INTERVAL_MS = 30_000L
 
         const val ACTION_START = "me.ibrahimrafi.wififileshare.action.START"
         const val ACTION_STOP = "me.ibrahimrafi.wififileshare.action.STOP"

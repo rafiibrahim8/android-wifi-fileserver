@@ -39,4 +39,16 @@ class DocumentTreeCache(private val root: DocumentFile) {
         cache.remove(path)
         timestamps.remove(path)
     }
+
+    /** Drop the cache for the directory that contains [childPath]. */
+    fun invalidateParentOf(childPath: String) {
+        val trimmed = childPath.trim('/')
+        val parent = if (!trimmed.contains('/')) "" else trimmed.substringBeforeLast('/')
+        invalidate(parent)
+    }
+
+    fun invalidateAll() {
+        cache.clear()
+        timestamps.clear()
+    }
 }

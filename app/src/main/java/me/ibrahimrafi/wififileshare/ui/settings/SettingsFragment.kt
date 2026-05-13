@@ -4,18 +4,19 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.preference.PreferenceManager
 import android.widget.TextView
 import me.ibrahimrafi.wififileshare.R
-import me.ibrahimrafi.wififileshare.model.ServerStateStore
 
 class SettingsFragment : Fragment(R.layout.fragment_settings) {
+    private val viewModel: SettingsViewModel by viewModels()
     private var restartHintView: TextView? = null
     private var sharedPreferences: SharedPreferences? = null
     private var isServerRunning = false
     private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (isServerRunning && key != THEME_MODE_KEY) {
-            ServerStateStore.markSettingsChangedWhileRunning()
+            viewModel.markSettingsChangedWhileRunning()
         }
     }
 
@@ -24,11 +25,11 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
         restartHintView = view.findViewById(R.id.settings_restart_hint)
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
-        ServerStateStore.isRunning.observe(viewLifecycleOwner) { running ->
+        viewModel.isRunning.observe(viewLifecycleOwner) { running ->
             isServerRunning = running
             updateRestartHintVisibility()
         }
-        ServerStateStore.hasPendingRestartNotice.observe(viewLifecycleOwner) {
+        viewModel.hasPendingRestartNotice.observe(viewLifecycleOwner) {
             updateRestartHintVisibility()
         }
 
@@ -55,7 +56,7 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
     }
 
     private fun updateRestartHintVisibility() {
-        val show = isServerRunning && (ServerStateStore.hasPendingRestartNotice.value == true)
+        val show = isServerRunning && (viewModel.hasPendingRestartNotice.value == true)
         restartHintView?.visibility = if (show) View.VISIBLE else View.GONE
     }
 

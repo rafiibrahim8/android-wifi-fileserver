@@ -3,6 +3,7 @@ package me.ibrahimrafi.wififileshare.ui.transfers
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -13,6 +14,7 @@ import me.ibrahimrafi.wififileshare.R
 import me.ibrahimrafi.wififileshare.model.Direction
 import me.ibrahimrafi.wififileshare.model.TransferItem
 import me.ibrahimrafi.wififileshare.model.TransferStatus
+import java.util.Locale
 
 class TransferAdapter(
     private val onCancelUpload: (TransferItem) -> Unit,
@@ -28,70 +30,114 @@ class TransferAdapter(
     }
 
     class TransferViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val iconBubble = itemView.findViewById<View>(R.id.icon_bubble)
+        private val iconImage = itemView.findViewById<ImageView>(R.id.icon_image)
         private val fileName = itemView.findViewById<TextView>(R.id.file_name)
         private val detail = itemView.findViewById<TextView>(R.id.detail)
         private val progress = itemView.findViewById<LinearProgressIndicator>(R.id.progress)
         private val cancelUpload = itemView.findViewById<TextView>(R.id.cancel_upload)
 
         fun bind(item: TransferItem, onCancelUpload: (TransferItem) -> Unit) {
+            val ctx = itemView.context
             fileName.text = item.fileName
+
+            val style = bubbleStyle(item)
+            iconBubble.setBackgroundResource(style.bubbleBg)
+            iconImage.setImageResource(style.iconRes)
+            iconImage.imageTintList = ContextCompat.getColorStateList(ctx, style.tintRes)
+            iconBubble.contentDescription = ctx.getString(style.contentDescRes)
+
+            val isActive = item.status == TransferStatus.ACTIVE
             val pct = if (item.totalBytes > 0L) (item.transferredBytes * 100 / item.totalBytes).toInt() else 0
-            progress.progress = pct.coerceIn(0, 100)
-            progress.setIndicatorColor(
-                ContextCompat.getColor(
-                    itemView.context,
-                    if (item.direction == Direction.DOWNLOAD) R.color.primary_dark else R.color.amber_upload,
-                ),
-            )
-            val directionSymbol = if (item.direction == Direction.UPLOAD) "↓" else "↑"
-            detail.text = itemView.context.getString(
-                R.string.transfer_detail_format,
-                directionSymbol,
-                formatBytes(item.transferredBytes),
-                formatBytes(item.totalBytes),
-                formatRate(item.speedBps),
-                item.clientIp,
-                statusLabel(item.status),
-            )
-            progress.visibility = if (
-                item.status == TransferStatus.FAILED ||
-                item.status == TransferStatus.CANCELLED
-            ) View.GONE else View.VISIBLE
+            detail.text = when (item.status) {
+                TransferStatus.ACTIVE -> ctx.getString(
+                    R.string.transfer_detail_active,
+                    formatRate(item.speedBps),
+                    pct.coerceIn(0, 100),
+                    formatBytes(item.transferredBytes),
+                    formatBytes(item.totalBytes),
+                )
+                TransferStatus.COMPLETED -> ctx.getString(
+                    R.string.transfer_detail_done,
+                    ctx.getString(R.string.transfer_status_completed),
+                    formatBytes(item.totalBytes),
+                )
+                TransferStatus.FAILED -> ctx.getString(
+                    R.string.transfer_detail_done,
+                    ctx.getString(R.string.transfer_status_failed),
+                    formatBytes(item.transferredBytes),
+                )
+                TransferStatus.CANCELLED -> ctx.getString(
+                    R.string.transfer_detail_done,
+                    ctx.getString(R.string.transfer_status_cancelled),
+                    formatBytes(item.transferredBytes),
+                )
+            }
+
+            if (isActive) {
+                progress.visibility = View.VISIBLE
+                progress.setProgressCompat(pct.coerceIn(0, 100), false)
+                progress.setIndicatorColor(ContextCompat.getColor(ctx, style.tintRes))
+            } else {
+                progress.visibility = View.GONE
+            }
 
             val canCancel = item.direction == Direction.UPLOAD &&
                 item.status == TransferStatus.ACTIVE &&
                 item.relativePath.isNotBlank()
             cancelUpload.visibility = if (canCancel) View.VISIBLE else View.GONE
             cancelUpload.setOnClickListener {
-                if (canCancel) {
-                    onCancelUpload(item)
-                }
+                if (canCancel) onCancelUpload(item)
             }
+        }
+
+        private data class BubbleStyle(
+            val bubbleBg: Int,
+            val iconRes: Int,
+            val tintRes: Int,
+            val contentDescRes: Int,
+        )
+
+        private fun bubbleStyle(item: TransferItem): BubbleStyle = when (item.status) {
+            TransferStatus.ACTIVE -> if (item.direction == Direction.DOWNLOAD) {
+                BubbleStyle(
+                    R.drawable.bg_icon_bubble_accent, R.drawable.ic_transfer_up,
+                    R.color.accent, R.string.cd_transfer_download,
+                )
+            } else {
+                BubbleStyle(
+                    R.drawable.bg_icon_bubble_success, R.drawable.ic_transfer_down,
+                    R.color.success, R.string.cd_transfer_upload,
+                )
+            }
+            TransferStatus.COMPLETED -> BubbleStyle(
+                R.drawable.bg_icon_bubble_success, R.drawable.ic_check,
+                R.color.success, R.string.cd_transfer_completed,
+            )
+            TransferStatus.FAILED -> BubbleStyle(
+                R.drawable.bg_icon_bubble_danger, R.drawable.ic_close,
+                R.color.danger, R.string.cd_transfer_failed,
+            )
+            TransferStatus.CANCELLED -> BubbleStyle(
+                R.drawable.bg_icon_bubble_neutral, R.drawable.ic_close,
+                R.color.ink_3, R.string.cd_transfer_cancelled,
+            )
         }
 
         private fun formatRate(speedBps: Long): String {
             if (speedBps <= 0L) return "0 B/s"
             val kb = speedBps / 1024.0
-            if (kb < 1024) return "%.1f KB/s".format(kb)
-            return "%.1f MB/s".format(kb / 1024)
+            if (kb < 1024) return String.format(Locale.US, "%.1f KB/s", kb)
+            return String.format(Locale.US, "%.1f MB/s", kb / 1024)
         }
 
         private fun formatBytes(size: Long): String {
             if (size <= 0L) return "0 B"
             val kb = size / 1024.0
-            if (kb < 1024) return "%.1f KB".format(kb)
+            if (kb < 1024) return String.format(Locale.US, "%.1f KB", kb)
             val mb = kb / 1024.0
-            if (mb < 1024) return "%.1f MB".format(mb)
-            return "%.2f GB".format(mb / 1024.0)
-        }
-
-        private fun statusLabel(status: TransferStatus): String {
-            return when (status) {
-                TransferStatus.ACTIVE -> itemView.context.getString(R.string.transfer_status_active)
-                TransferStatus.COMPLETED -> itemView.context.getString(R.string.transfer_status_completed)
-                TransferStatus.FAILED -> itemView.context.getString(R.string.transfer_status_failed)
-                TransferStatus.CANCELLED -> itemView.context.getString(R.string.transfer_status_cancelled)
-            }
+            if (mb < 1024) return String.format(Locale.US, "%.1f MB", mb)
+            return String.format(Locale.US, "%.2f GB", mb / 1024.0)
         }
     }
 

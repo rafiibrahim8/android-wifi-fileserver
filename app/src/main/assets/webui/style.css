@@ -384,7 +384,8 @@ td.name-cell > .copy-btn {
   margin-left: 0.5rem;
   vertical-align: middle;
 }
-#file-input {
+#file-input,
+#folder-input {
   display: none;
 }
 .copy-btn {
@@ -443,6 +444,8 @@ td.name-cell > .copy-btn {
 .delete-dock-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .entry-selectable .select-mark {
   display: none;
@@ -633,4 +636,59 @@ body.delete-mode .entry-selectable.selected {
   body.delete-mode .entry-selectable.selected {
     background-color: #3a2227 !important;
   }
+}
+
+/* Drop-box mode banner */
+.dropbox-banner {
+  background: #fff7e0;
+  border: 1px solid #f0d56b;
+  color: #5a4500;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+@media (prefers-color-scheme: dark) {
+  .dropbox-banner {
+    background: #2a230f;
+    border-color: #5a4a1c;
+    color: #f0d56b;
+  }
+}
+
+/* Drop overlay (only visible while a file is being dragged over the page) */
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 92, 246, 0.85);
+  color: #ffffff;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  pointer-events: none;
+  backdrop-filter: blur(2px);
+}
+.drop-overlay.visible {
+  display: flex;
+  animation: dropFadeIn 140ms ease-out;
+}
+@keyframes dropFadeIn {
+  from { opacity: 0; transform: scale(1.02); }
+  to { opacity: 1; transform: scale(1); }
+}
+.drop-overlay-inner {
+  text-align: center;
+  padding: 32px 44px;
+  border-radius: 22px;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+}
+.drop-overlay-icon {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.drop-overlay-text {
+  font-size: 18px;
+  font-weight: 600;
 }

@@ -56,7 +56,7 @@
         android:key="allow_zip"
         android:title="@string/pref_zip_title"
         app:iconSpaceReserved="false"
-        android:summary="ZIP downloads are CPU-intensive on large directories."
+        android:summary="@string/pref_zip_summary"
         android:defaultValue="false" />
 
     <SwitchPreferenceCompat
@@ -73,4 +73,20 @@
         android:entries="@array/speed_entries"
         android:entryValues="@array/speed_values"
         app:useSimpleSummaryProvider="true" />
+
+    <ListPreference
+        android:key="idle_timeout_minutes"
+        android:title="@string/pref_idle_timeout_title"
+        app:iconSpaceReserved="false"
+        android:defaultValue="0"
+        android:entries="@array/idle_timeout_entries"
+        android:entryValues="@array/idle_timeout_values"
+        app:useSimpleSummaryProvider="true" />
+
+    <SwitchPreferenceCompat
+        android:key="drop_box_mode"
+        android:title="@string/pref_drop_box_title"
+        android:summary="@string/pref_drop_box_summary"
+        app:iconSpaceReserved="false"
+        android:defaultValue="false" />
 </PreferenceScreen>

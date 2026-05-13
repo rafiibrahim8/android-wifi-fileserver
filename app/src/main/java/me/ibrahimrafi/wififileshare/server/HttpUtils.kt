@@ -27,11 +27,11 @@ fun formatTime(epochMs: Long): String {
 fun formatBytes(bytes: Long): String {
     if (bytes < 1024L) return "$bytes B"
     val kb = bytes / 1024.0
-    if (kb < 1024.0) return "%.1f KB".format(kb)
+    if (kb < 1024.0) return String.format(Locale.US, "%.1f KB", kb)
     val mb = kb / 1024.0
-    if (mb < 1024.0) return "%.1f MB".format(mb)
+    if (mb < 1024.0) return String.format(Locale.US, "%.1f MB", mb)
     val gb = mb / 1024.0
-    return "%.2f GB".format(gb)
+    return String.format(Locale.US, "%.2f GB", gb)
 }
 
 fun percentEncodePath(path: String): String {
@@ -41,7 +41,8 @@ fun percentEncodePath(path: String): String {
 }
 
 fun percentEncodeFileName(fileName: String): String {
-    return URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()).replace("+", "%20")
+    val sanitized = fileName.replace('\r', '_').replace('\n', '_')
+    return URLEncoder.encode(sanitized, StandardCharsets.UTF_8.name()).replace("+", "%20")
 }
 
 fun parseRangeHeader(header: String, size: Long): Pair<Long, Long>? {
@@ -82,6 +83,7 @@ data class ContentRange(val start: Long, val end: Long, val total: Long)
 
 fun parseContentRange(header: String?): ContentRange? {
     if (header.isNullOrBlank()) return null
+    if (!header.startsWith("bytes ")) return null
     val parts = header.removePrefix("bytes ").split('/', limit = 2)
     if (parts.size != 2) return null
     val range = parts[0].split('-', limit = 2)

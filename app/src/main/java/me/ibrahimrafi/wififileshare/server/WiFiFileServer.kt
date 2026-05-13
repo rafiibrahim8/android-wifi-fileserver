@@ -16,6 +16,7 @@ import java.security.SecureRandom
 import java.util.ArrayDeque
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 class WiFiFileServer(
     private val context: Context,
@@ -34,6 +35,13 @@ class WiFiFileServer(
     private val uploadTransferIds = ConcurrentHashMap<String, String>()
     private val webUiAssetToken = generateWebUiAssetToken()
     private val webUiAssetBasePath = "/.$webUiAssetToken"
+
+    /** Best-effort sweep of abandoned upload parts. Safe to call once on startup. */
+    fun sweepStalePartials(): Int = uploadHandler.sweepStalePartials()
+
+    /** Monotonic timestamp of the last request the server handled. */
+    private val lastActivityMs = AtomicLong(System.currentTimeMillis())
+    val lastActivity: Long get() = lastActivityMs.get()
     private val webUiStyleCssBytes = readAssetBytes("webui/style.css")
     private val webUiAppJsBytes = readAssetBytes("webui/app.js")
     private val webUiFaviconBytes = readAssetBytes("webui/favicon.ico")
@@ -43,6 +51,7 @@ class WiFiFileServer(
 
     override fun serve(session: IHTTPSession): Response {
         val started = System.currentTimeMillis()
+        lastActivityMs.set(started)
         val ip = session.remoteIpAddress ?: "unknown"
 
         val response = try {
@@ -85,15 +94,20 @@ class WiFiFileServer(
             }
             val stream = runCatching { context.assets.open("icons/$iconName") }.getOrNull()
                 ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
-            val size = runCatching { stream.available().toLong() }.getOrDefault(-1L)
-            return if (size > 0L) {
-                newFixedLengthResponse(Response.Status.OK, "image/svg+xml", stream, size).also {
-                    it.addHeader("Cache-Control", "public, max-age=3600")
+            return try {
+                val size = runCatching { stream.available().toLong() }.getOrDefault(-1L)
+                if (size > 0L) {
+                    newFixedLengthResponse(Response.Status.OK, "image/svg+xml", stream, size).also {
+                        it.addHeader("Cache-Control", "public, max-age=3600")
+                    }
+                } else {
+                    newChunkedResponse(Response.Status.OK, "image/svg+xml", stream).also {
+                        it.addHeader("Cache-Control", "public, max-age=3600")
+                    }
                 }
-            } else {
-                newChunkedResponse(Response.Status.OK, "image/svg+xml", stream).also {
-                    it.addHeader("Cache-Control", "public, max-age=3600")
-                }
+            } catch (t: Throwable) {
+                runCatching { stream.close() }
+                throw t
             }
         }
 
@@ -157,7 +171,7 @@ class WiFiFileServer(
             }
             val created = createDirectoryPath(path)
             return if (created) {
-                cache.invalidate("")
+                cache.invalidateParentOf(path)
                 newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, "Directory created")
             } else {
                 newFixedLengthResponse(Response.Status.CONFLICT, MIME_PLAINTEXT, "Directory exists or invalid path")
@@ -176,7 +190,7 @@ class WiFiFileServer(
                 ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             val deleted = runCatching { doc.delete() }.getOrDefault(false)
             return if (deleted) {
-                cache.invalidate("")
+                cache.invalidateParentOf(path)
                 newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, "Deleted")
             } else {
                 newFixedLengthResponse(Response.Status.CONFLICT, MIME_PLAINTEXT, "Delete failed")
@@ -216,7 +230,7 @@ class WiFiFileServer(
             )
 
             val result = uploadHandler.handleUpload(path, session)
-            cache.invalidate("")
+            cache.invalidateParentOf(path)
             val durationMs = (System.currentTimeMillis() - uploadStartMs).coerceAtLeast(1L)
             val chunkSpeed = if (chunkBytes > 0L) {
                 maxOf(1L, (chunkBytes * 1000L) / durationMs)
@@ -253,7 +267,22 @@ class WiFiFileServer(
             return result
         }
 
+        if (uri == "/zip-multi" && method == Method.POST) {
+            if (config.dropBoxMode) {
+                return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Disabled in drop-box mode")
+            }
+            if (!config.allowZipDownload) {
+                return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "ZIP download disabled")
+            }
+            session.parseBody(HashMap())
+            val paths = session.parameters["paths"].orEmpty()
+            return directoryHandler.serveZipOfPaths(paths)
+        }
+
         if (uri.startsWith("/zip") && method == Method.GET) {
+            if (config.dropBoxMode) {
+                return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Disabled in drop-box mode")
+            }
             if (!config.allowZipDownload) {
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "ZIP download disabled")
             }
@@ -262,6 +291,9 @@ class WiFiFileServer(
         }
 
         if (uri.startsWith("/token/") && method == Method.GET) {
+            if (config.dropBoxMode) {
+                return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Disabled in drop-box mode")
+            }
             val token = uri.removePrefix("/token/")
             val path = tokenManager.consume(token)
                 ?: return newFixedLengthResponse(Response.Status.GONE, MIME_PLAINTEXT, "Token expired")
@@ -272,6 +304,9 @@ class WiFiFileServer(
         }
 
         if (uri == "/token" && method == Method.POST) {
+            if (config.dropBoxMode) {
+                return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Disabled in drop-box mode")
+            }
             val path = session.parameters["path"]?.firstOrNull()?.trim('/')
                 ?: return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "Missing path")
             val token = tokenManager.create(path)
@@ -284,7 +319,13 @@ class WiFiFileServer(
                 ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             return when {
                 doc.isDirectory -> directoryHandler.serveDirectory(path, serverBase, webUiAssetBasePath)
-                doc.isFile -> serveFileWithTransfer(path, doc, ip, session)
+                doc.isFile -> {
+                    if (config.dropBoxMode) {
+                        newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Disabled in drop-box mode")
+                    } else {
+                        serveFileWithTransfer(path, doc, ip, session)
+                    }
+                }
                 else -> newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             }
         }

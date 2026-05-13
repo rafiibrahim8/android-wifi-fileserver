@@ -1,0 +1,19 @@
+<resources>
+    <!-- Dark overrides for the palette -->
+    <color name="bg">#0F1115</color>
+    <color name="surface">#181B21</color>
+    <color name="surface_variant">#1F232B</color>
+    <color name="line">#2A2E37</color>
+    <color name="ink">#ECEDEF</color>
+    <color name="ink_2">#A8ABB3</color>
+    <color name="ink_3">#6E727A</color>
+
+    <color name="accent">#7395FF</color>
+    <color name="accent_soft">#1B2546</color>
+    <color name="success">#37C77A</color>
+    <color name="success_soft">#13321F</color>
+    <color name="danger">#EA6F62</color>
+    <color name="danger_soft">#3A1F1B</color>
+    <color name="warn">#EBB845</color>
+    <color name="warn_soft">#3A2E13</color>
+</resources>

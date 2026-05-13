@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="home_padding_horizontal">16dp</dimen>
-    <dimen name="home_padding_vertical">16dp</dimen>
-    <dimen name="home_status_gap">14dp</dimen>
-    <dimen name="home_section_gap">10dp</dimen>
-    <dimen name="home_qr_size">180dp</dimen>
+    <dimen name="screen_padding_horizontal">22dp</dimen>
+    <dimen name="screen_padding_top">12dp</dimen>
+    <dimen name="screen_padding_bottom">12dp</dimen>
+    <dimen name="home_title_top_gap">4dp</dimen>
+    <dimen name="home_title_bottom_gap">28dp</dimen>
+    <dimen name="home_qr_size">178dp</dimen>
 </resources>

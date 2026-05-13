@@ -13,16 +13,19 @@ class ServerPreferences(context: Context) {
         val defaultPort = ServerConfig.DEFAULT_PORT
         val port = prefs.getString(KEY_PORT, defaultPort.toString())?.toIntOrNull()?.coerceIn(1024, 65535) ?: defaultPort
         val rootUri = prefs.getString(KEY_ROOT_URI, null)?.let(Uri::parse)
+        val idleMin = prefs.getString(KEY_IDLE_TIMEOUT_MIN, "0")?.toIntOrNull()?.coerceAtLeast(0) ?: 0
         return ServerConfig(
             port = port,
             anonymousAccess = prefs.getBoolean(KEY_ANON, true),
             userId = prefs.getString(KEY_USER, "") ?: "",
             password = prefs.getString(KEY_PASSWORD, "") ?: "",
             readOnlyFileserver = prefs.getBoolean(KEY_READ_ONLY_FILESERVER, false),
+            dropBoxMode = prefs.getBoolean(KEY_DROP_BOX_MODE, false),
             allowUploads = prefs.getBoolean(KEY_ALLOW_UPLOADS, true),
             allowZipDownload = prefs.getBoolean(KEY_ALLOW_ZIP, false),
             showHiddenFiles = prefs.getBoolean(KEY_SHOW_HIDDEN, false),
             maxSpeedBps = parseSpeed(prefs.getString(KEY_MAX_SPEED, "off") ?: "off"),
+            idleTimeoutMs = idleMin * 60_000L,
             rootUri = rootUri,
         )
     }
@@ -52,5 +55,7 @@ class ServerPreferences(context: Context) {
         const val KEY_ALLOW_ZIP = "allow_zip"
         const val KEY_SHOW_HIDDEN = "show_hidden"
         const val KEY_MAX_SPEED = "max_speed"
+        const val KEY_IDLE_TIMEOUT_MIN = "idle_timeout_minutes"
+        const val KEY_DROP_BOX_MODE = "drop_box_mode"
     }
 }

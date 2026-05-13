@@ -22,9 +22,9 @@
         android:layout_marginEnd="12dp"
         android:layout_marginBottom="12dp"
         app:cardBackgroundColor="?attr/colorSurface"
-        app:cardCornerRadius="28dp"
+        app:cardCornerRadius="26dp"
         app:cardElevation="0dp"
-        app:strokeColor="?attr/colorSurfaceVariant"
+        app:strokeColor="@color/line"
         app:strokeWidth="1dp">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView

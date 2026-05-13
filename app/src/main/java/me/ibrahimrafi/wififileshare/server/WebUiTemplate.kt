@@ -11,10 +11,40 @@ internal fun buildWebUiTemplate(
     uploadControls: String,
     uploadInput: String,
     cancelUploadButton: String,
-    deleteToggleButton: String,
+    selectToggleButton: String,
     createFolderButton: String,
     zipSection: String,
+    bulkZipButton: String,
+    deleteConfirmButton: String,
+    dropBoxMode: Boolean,
 ): String {
+    val dropBoxBanner = if (dropBoxMode) {
+        """<div class="dropbox-banner">Drop-box mode — anyone on this network can upload files here. Browsing is disabled.</div>"""
+    } else {
+        ""
+    }
+    val listingBlock = if (dropBoxMode) {
+        ""
+    } else {
+        """
+      <div class="listing">
+        <table aria-describedby="summary">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Name</th>
+              <th class="center">Size</th>
+              <th class="hideable center">Last Modified</th>
+              <th class="hideable"></th>
+            </tr>
+          </thead>
+          <tbody>
+            $rows
+          </tbody>
+        </table>
+      </div>
+        """.trimIndent()
+    }
     return """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,6 +65,7 @@ internal fun buildWebUiTemplate(
 
   <div class="wrapper">
     <main>
+      $dropBoxBanner
       <div class="meta">
         <div id="summary">
           <span class="meta-item"><b>$dirsCount</b> directories</span>
@@ -42,30 +73,22 @@ internal fun buildWebUiTemplate(
         </div>
         <div class="actions">
           $uploadControls
-          $deleteToggleButton
+          $selectToggleButton
           $createFolderButton
           $zipSection
         </div>
         $uploadInput
       </div>
 
-      <div class="listing">
-        <table aria-describedby="summary">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Name</th>
-              <th class="center">Size</th>
-              <th class="hideable center">Last Modified</th>
-              <th class="hideable"></th>
-            </tr>
-          </thead>
-          <tbody>
-            $rows
-          </tbody>
-        </table>
-      </div>
+      $listingBlock
     </main>
+  </div>
+
+  <div id="drop-overlay" class="drop-overlay" aria-hidden="true">
+    <div class="drop-overlay-inner">
+      <div class="drop-overlay-icon">↓</div>
+      <div class="drop-overlay-text">Drop here to upload</div>
+    </div>
   </div>
 
   <div id="upload-dock" class="upload-dock" aria-live="polite">
@@ -81,7 +104,8 @@ internal fun buildWebUiTemplate(
   <div id="delete-dock" class="upload-dock" aria-live="polite">
     <div id="delete-summary" class="upload-text">No items selected</div>
     <div class="delete-dock-actions">
-      <button id="delete-confirm" class="btn btn-danger">Delete</button>
+      $bulkZipButton
+      $deleteConfirmButton
     </div>
   </div>
 
