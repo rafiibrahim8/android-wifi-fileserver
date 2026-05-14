@@ -110,28 +110,53 @@ fun InputStream.skipFully(bytes: Long) {
 
 fun localIpAddress(context: Context): String {
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    
+
+    // 1. Currently connected Wi-Fi / Ethernet — preferred when the phone is a client.
     val activeNetwork = connectivityManager.activeNetwork
     val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-    if (capabilities != null && (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || 
+    if (capabilities != null && (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
         capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))) {
         val linkProperties = connectivityManager.getLinkProperties(activeNetwork)
         val ipAddress = linkProperties?.linkAddresses?.firstOrNull { it.address is java.net.Inet4Address }?.address?.hostAddress
         if (ipAddress != null) return ipAddress
     }
 
+    // 2. WifiManager fallback — sometimes works when the active-network path misses.
     val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
     @Suppress("DEPRECATION")
     val ipInt = wifiManager?.connectionInfo?.ipAddress ?: 0
-    return if (ipInt == 0) "0.0.0.0" else String.format(
-        Locale.US,
-        "%d.%d.%d.%d",
-        ipInt and 0xff,
-        ipInt shr 8 and 0xff,
-        ipInt shr 16 and 0xff,
-        ipInt shr 24 and 0xff
-    )
+    if (ipInt != 0) {
+        return String.format(
+            Locale.US,
+            "%d.%d.%d.%d",
+            ipInt and 0xff,
+            ipInt shr 8 and 0xff,
+            ipInt shr 16 and 0xff,
+            ipInt shr 24 and 0xff,
+        )
+    }
+
+    // 3. Hotspot interface — the phone is hosting the network. Look for the AP interface
+    //    by name; vendor names vary so the match covers the common cases.
+    hotspotIpv4()?.let { return it }
+
+    return "0.0.0.0"
 }
+
+private fun hotspotIpv4(): String? = runCatching {
+    java.net.NetworkInterface.getNetworkInterfaces()
+        ?.asSequence()
+        ?.filter { it.isUp && !it.isLoopback }
+        ?.filter {
+            val n = it.name.lowercase(Locale.ROOT)
+            n.startsWith("ap") || n.startsWith("softap") ||
+                n.startsWith("swlan") || n == "wlan1"
+        }
+        ?.flatMap { it.inetAddresses.asSequence() }
+        ?.filterIsInstance<java.net.Inet4Address>()
+        ?.firstOrNull { !it.isLoopbackAddress && !it.isLinkLocalAddress }
+        ?.hostAddress
+}.getOrNull()
 
 fun resolveDownloadMimeType(fileName: String?, documentMimeType: String?): String {
     val extension = fileName

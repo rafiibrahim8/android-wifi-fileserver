@@ -38,10 +38,12 @@ document.querySelectorAll('.copy-btn').forEach((btn) => {
     if (deleteMode) return;
     const text = btn.dataset.url || '';
     const ok = await copyText(text);
-    const old = btn.textContent;
-    btn.textContent = ok ? 'Copied' : 'Failed';
+    const iconHtml = btn.innerHTML;
+    btn.innerHTML = ok ? 'Link copied' : 'Copy failed';
+    btn.classList.toggle('copy-btn-feedback', true);
     setTimeout(() => {
-      btn.textContent = old;
+      btn.innerHTML = iconHtml;
+      btn.classList.toggle('copy-btn-feedback', false);
     }, 1100);
   });
 });
@@ -300,7 +302,12 @@ async function uploadFiles(fileList) {
   } catch (err) {
     const message = err && err.message ? err.message : 'unknown error';
     if (uploadText) {
-      uploadText.textContent = message === 'canceled' ? 'Upload canceled' : ('Upload failed: ' + message);
+      const label = (
+        message === 'canceled' ? 'Upload canceled' :
+        message === 'server-canceled' ? 'Upload cancelled from phone' :
+        'Upload failed: ' + message
+      );
+      uploadText.textContent = label;
     }
     if (progressFill && message === 'canceled') {
       progressFill.style.width = '0%';
@@ -351,10 +358,15 @@ async function uploadFile(file, onProgress) {
       });
     } catch (err) {
       if (cancelRequested) throw new Error('canceled');
-      throw err;
+      // Network error mid-chunk usually means the server closed the connection
+      // (e.g. phone-side cancel via Connection: close on the 410 response).
+      throw new Error('server-canceled');
     }
 
     if (!response.ok) {
+      // 410 GONE = server-side cancellation. Treat distinctly so the UI says
+      // "cancelled by phone" instead of a generic "upload failed: 410".
+      if (response.status === 410) throw new Error('server-canceled');
       let detail = '';
       try { detail = await response.text(); } catch (_) {}
       throw new Error(response.status + (detail ? ' ' + detail : ''));

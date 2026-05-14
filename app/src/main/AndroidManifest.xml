@@ -38,6 +38,11 @@
             android:name=".ui.OnboardingActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.LicensesActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
         <service
             android:name=".server.FileServerService"
             android:enabled="true"

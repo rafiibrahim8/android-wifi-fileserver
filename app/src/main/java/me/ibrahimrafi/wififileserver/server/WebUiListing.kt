@@ -12,6 +12,14 @@ private val isoFormatter = ThreadLocal.withInitial {
 private val inlineSvgCache = ConcurrentHashMap<String, String>()
 private val safeIconNamePattern = Regex("^[A-Za-z0-9_.-]+\\.svg$")
 
+// Link/chain icon, inline so the page doesn't need an extra request.
+private val COPY_ICON_SVG = """
+<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+</svg>
+""".trim()
+
 internal fun buildRows(context: Context, currentPath: String, serverBase: String, entries: List<DirectoryEntry>): String {
     return buildString {
         buildUpRow(context, currentPath, serverBase)?.let { append(it) }
@@ -61,7 +69,9 @@ internal fun buildRows(context: Context, currentPath: String, serverBase: String
                 append("</span></span></a>")
                 append("<button class=\"copy-btn\" data-url=\"")
                 append(escapeHtml(downloadUrl))
-                append("\" title=\"Copy link\" aria-label=\"Copy link\">Copy</button></td>")
+                append("\" title=\"Copy link\" aria-label=\"Copy link\">")
+                append(COPY_ICON_SVG)
+                append("</button></td>")
                 append("<td class=\"center\">")
                 append(escapeHtml(formatBytes(entry.size)))
                 append("</td>")

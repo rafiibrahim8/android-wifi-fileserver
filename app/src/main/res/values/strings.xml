@@ -65,6 +65,12 @@
     <string name="pref_idle_timeout_title">Auto-stop when idle</string>
     <string name="pref_drop_box_title">Drop-box mode</string>
     <string name="pref_drop_box_summary">Hide the file list and accept only uploads.</string>
+    <string name="pref_about_title">About</string>
+    <string name="pref_version_title">Version</string>
+    <string name="pref_licenses_title">Open-source licenses</string>
+    <string name="pref_licenses_summary">Libraries used by this app</string>
+    <string name="licenses_screen_title">Open-source licenses</string>
+    <string name="licenses_intro">This app is built on the open-source libraries below. Tap any entry to open its project page.</string>
     <string name="setup_title">Pick a folder to share</string>
     <string name="setup_subtitle">Choose any folder on your device. Anyone on this Wi-Fi can browse and download what\'s inside.</string>
     <string name="setup_choose_folder">Choose folder</string>

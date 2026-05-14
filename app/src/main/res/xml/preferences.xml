@@ -89,4 +89,21 @@
         android:summary="@string/pref_drop_box_summary"
         app:iconSpaceReserved="false"
         android:defaultValue="false" />
+
+    <PreferenceCategory
+        android:title="@string/pref_about_title"
+        app:iconSpaceReserved="false">
+
+        <Preference
+            android:key="version"
+            android:title="@string/pref_version_title"
+            android:selectable="false"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="licenses"
+            android:title="@string/pref_licenses_title"
+            android:summary="@string/pref_licenses_summary"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
 </PreferenceScreen>

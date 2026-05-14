@@ -1,6 +1,7 @@
 package me.ibrahimrafi.wififileserver.ui.settings
 
 import android.app.Activity
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,10 +11,12 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import me.ibrahimrafi.wififileserver.BuildConfig
 import me.ibrahimrafi.wififileserver.R
 import me.ibrahimrafi.wififileserver.model.ServerConfig
 import me.ibrahimrafi.wififileserver.storage.FolderAccessManager
 import me.ibrahimrafi.wififileserver.storage.ServerPreferences
+import me.ibrahimrafi.wififileserver.ui.LicensesActivity
 
 class SettingsPreferencesFragment : PreferenceFragmentCompat() {
     private lateinit var serverPreferences: ServerPreferences
@@ -35,6 +38,16 @@ class SettingsPreferencesFragment : PreferenceFragmentCompat() {
         setupRootFolder()
         setupAuthPreferences()
         setupReadOnlyDependency()
+        setupAbout()
+    }
+
+    private fun setupAbout() {
+        findPreference<Preference>("version")?.summary =
+            "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
+        findPreference<Preference>("licenses")?.setOnPreferenceClickListener {
+            startActivity(Intent(requireContext(), LicensesActivity::class.java))
+            true
+        }
     }
 
     private fun setupPortValidation() {

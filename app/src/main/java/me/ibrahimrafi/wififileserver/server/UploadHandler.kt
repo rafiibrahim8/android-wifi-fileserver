@@ -69,11 +69,7 @@ class UploadHandler(
         val key = cleanedPath.joinToString("/")
         if (canceledUploads.contains(key)) {
             cleanupPartial(key, cleanedPath)
-            return NanoHTTPD.newFixedLengthResponse(
-                NanoHTTPD.Response.Status.GONE,
-                NanoHTTPD.MIME_PLAINTEXT,
-                "Upload canceled",
-            )
+            return canceledResponse()
         }
 
         val fileName = cleanedPath.last()
@@ -163,11 +159,7 @@ class UploadHandler(
         if (writeResult.isFailure) {
             if (writeResult.exceptionOrNull() is UploadCanceledException) {
                 cleanupPartial(key, cleanedPath)
-                return NanoHTTPD.newFixedLengthResponse(
-                    NanoHTTPD.Response.Status.GONE,
-                    NanoHTTPD.MIME_PLAINTEXT,
-                    "Upload canceled",
-                )
+                return canceledResponse()
             }
             return NanoHTTPD.newFixedLengthResponse(
                 NanoHTTPD.Response.Status.BAD_REQUEST,
@@ -258,6 +250,18 @@ class UploadHandler(
 
     private fun normalizePath(relativePath: String): List<String> {
         return relativePath.trim('/').split('/').filter { it.isNotBlank() }
+    }
+
+    /**
+     * 410 response for a cancelled upload. Asks the connection to close so the PC's TCP
+     * stack drops the in-flight chunk instead of finishing it before noticing the 410.
+     */
+    private fun canceledResponse(): NanoHTTPD.Response {
+        return NanoHTTPD.newFixedLengthResponse(
+            NanoHTTPD.Response.Status.GONE,
+            NanoHTTPD.MIME_PLAINTEXT,
+            "Upload canceled by server",
+        ).also { it.addHeader("Connection", "close") }
     }
 
     /**
