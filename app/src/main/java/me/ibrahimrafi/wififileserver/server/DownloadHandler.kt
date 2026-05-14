@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.server
+package me.ibrahimrafi.wififileserver.server
 
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile

@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.qr
+package me.ibrahimrafi.wififileserver.qr
 
 import android.graphics.Bitmap
 import android.graphics.Canvas

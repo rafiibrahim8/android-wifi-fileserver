@@ -1,19 +1,45 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
 
+// Signing material lives in `keystore.properties` at the repo root. The file is
+// gitignored; an `keystore.properties.example` is committed for reference.
+val keystorePropertiesFile: File = rootProject.file("keystore.properties")
+val hasKeystore: Boolean = keystorePropertiesFile.exists()
+val keystoreProperties = Properties().apply {
+    if (hasKeystore) keystorePropertiesFile.inputStream().use(::load)
+}
+
 android {
-    namespace = "me.ibrahimrafi.wififileshare"
+    namespace = "me.ibrahimrafi.wififileserver"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "me.ibrahimrafi.wififileshare"
+        applicationId = "me.ibrahimrafi.wififileserver"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        if (hasKeystore) {
+            create("release") {
+                val storeFileName = keystoreProperties.getProperty("storeFile")
+                    ?: error("keystore.properties missing 'storeFile'")
+                storeFile = rootProject.file(storeFileName)
+                storePassword = keystoreProperties.getProperty("storePassword")
+                    ?: error("keystore.properties missing 'storePassword'")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                    ?: error("keystore.properties missing 'keyAlias'")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                    ?: error("keystore.properties missing 'keyPassword'")
+            }
+        }
     }
 
     buildTypes {
@@ -24,6 +50,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (hasKeystore) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
             isMinifyEnabled = false

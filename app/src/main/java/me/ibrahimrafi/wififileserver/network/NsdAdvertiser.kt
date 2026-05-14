@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.network
+package me.ibrahimrafi.wififileserver.network
 
 import android.content.Context
 import android.net.nsd.NsdManager
@@ -11,7 +11,7 @@ class NsdAdvertiser(context: Context) {
     fun start(port: Int) {
         if (nsdManager == null || listener != null) return
         val serviceInfo = NsdServiceInfo().apply {
-            serviceName = "WiFiFileShare"
+            serviceName = "WiFiFileServer"
             serviceType = "_http._tcp."
             setPort(port)
         }

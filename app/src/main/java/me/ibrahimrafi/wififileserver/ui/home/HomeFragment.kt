@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.ui.home
+package me.ibrahimrafi.wififileserver.ui.home
 
 import android.animation.ObjectAnimator
 import android.app.Activity
@@ -22,12 +22,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.google.android.material.button.MaterialButton
-import me.ibrahimrafi.wififileshare.R
-import me.ibrahimrafi.wififileshare.qr.QrBitmapGenerator
-import me.ibrahimrafi.wififileshare.ui.snack
-import me.ibrahimrafi.wififileshare.server.FileServerService
-import me.ibrahimrafi.wififileshare.storage.FolderAccessManager
-import me.ibrahimrafi.wififileshare.storage.ServerPreferences
+import me.ibrahimrafi.wififileserver.R
+import me.ibrahimrafi.wififileserver.qr.QrBitmapGenerator
+import me.ibrahimrafi.wififileserver.ui.snack
+import me.ibrahimrafi.wififileserver.server.FileServerService
+import me.ibrahimrafi.wififileserver.storage.FolderAccessManager
+import me.ibrahimrafi.wififileserver.storage.ServerPreferences
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
     private val viewModel: HomeViewModel by viewModels()

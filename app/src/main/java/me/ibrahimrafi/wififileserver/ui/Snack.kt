@@ -1,9 +1,9 @@
-package me.ibrahimrafi.wififileshare.ui
+package me.ibrahimrafi.wififileserver.ui
 
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
-import me.ibrahimrafi.wififileshare.R
+import me.ibrahimrafi.wififileserver.R
 
 /** Show a short snackbar anchored above the floating bottom-nav card. */
 fun Fragment.snack(@StringRes msg: Int) {

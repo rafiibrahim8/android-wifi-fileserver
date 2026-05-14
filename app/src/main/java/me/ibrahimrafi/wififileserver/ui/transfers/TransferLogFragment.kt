@@ -1,9 +1,9 @@
-package me.ibrahimrafi.wififileshare.ui.transfers
+package me.ibrahimrafi.wififileserver.ui.transfers
 
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
-import me.ibrahimrafi.wififileshare.ui.snack
+import me.ibrahimrafi.wififileserver.ui.snack
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -16,12 +16,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.ibrahimrafi.wififileshare.R
-import me.ibrahimrafi.wififileshare.model.Direction
-import me.ibrahimrafi.wififileshare.model.TransferItem
-import me.ibrahimrafi.wififileshare.model.TransferStatus
-import me.ibrahimrafi.wififileshare.storage.ServerPreferences
-import me.ibrahimrafi.wififileshare.server.percentEncodePath
+import me.ibrahimrafi.wififileserver.R
+import me.ibrahimrafi.wififileserver.model.Direction
+import me.ibrahimrafi.wififileserver.model.TransferItem
+import me.ibrahimrafi.wififileserver.model.TransferStatus
+import me.ibrahimrafi.wififileserver.storage.ServerPreferences
+import me.ibrahimrafi.wififileserver.server.percentEncodePath
 import java.net.HttpURLConnection
 import java.net.URL
 

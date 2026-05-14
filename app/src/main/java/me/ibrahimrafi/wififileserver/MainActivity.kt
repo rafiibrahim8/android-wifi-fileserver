@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare
+package me.ibrahimrafi.wififileserver
 
 import android.Manifest
 import android.content.Intent
@@ -18,11 +18,11 @@ import androidx.fragment.app.Fragment
 import android.view.ViewGroup.MarginLayoutParams
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import me.ibrahimrafi.wififileshare.ui.OnboardingActivity
-import me.ibrahimrafi.wififileshare.ui.home.HomeFragment
-import me.ibrahimrafi.wififileshare.ui.settings.SettingsFragment
-import me.ibrahimrafi.wififileshare.ui.transfers.TransferLogFragment
-import me.ibrahimrafi.wififileshare.server.FileServerService
+import me.ibrahimrafi.wififileserver.ui.OnboardingActivity
+import me.ibrahimrafi.wififileserver.ui.home.HomeFragment
+import me.ibrahimrafi.wififileserver.ui.settings.SettingsFragment
+import me.ibrahimrafi.wififileserver.ui.transfers.TransferLogFragment
+import me.ibrahimrafi.wififileserver.server.FileServerService
 
 class MainActivity : AppCompatActivity() {
     private val notificationPermissionLauncher =
@@ -159,7 +159,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val ACTION_START_SHORTCUT = "me.ibrahimrafi.wififileshare.action.START_SHORTCUT"
+        private const val ACTION_START_SHORTCUT = "me.ibrahimrafi.wififileserver.action.START_SHORTCUT"
         private const val TAG_HOME = "nav_home"
         private const val TAG_TRANSFERS = "nav_transfers"
         private const val TAG_SETTINGS = "nav_settings"

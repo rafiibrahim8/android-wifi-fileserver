@@ -1,12 +1,12 @@
-package me.ibrahimrafi.wififileshare.ui.home
+package me.ibrahimrafi.wififileserver.ui.home
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import me.ibrahimrafi.wififileshare.model.Direction
-import me.ibrahimrafi.wififileshare.model.ServerStateStore
-import me.ibrahimrafi.wififileshare.model.TransferItem
-import me.ibrahimrafi.wififileshare.model.TransferStatus
+import me.ibrahimrafi.wififileserver.model.Direction
+import me.ibrahimrafi.wififileserver.model.ServerStateStore
+import me.ibrahimrafi.wififileserver.model.TransferItem
+import me.ibrahimrafi.wififileserver.model.TransferStatus
 
 class HomeViewModel : ViewModel() {
 

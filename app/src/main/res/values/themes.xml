@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.WiFiFileShare" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.WiFiFileServer" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/accent</item>
         <item name="colorOnPrimary">#FFFFFF</item>
         <item name="colorPrimaryContainer">@color/accent_soft</item>
@@ -18,10 +18,10 @@
         <item name="android:statusBarColor" tools:targetApi="l">@color/bg</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="android:navigationBarColor">@color/bg</item>
-        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.WiFiFileShare.Large</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.WiFiFileServer.Large</item>
     </style>
 
-    <style name="ShapeAppearance.WiFiFileShare.Large" parent="ShapeAppearance.Material3.LargeComponent">
+    <style name="ShapeAppearance.WiFiFileServer.Large" parent="ShapeAppearance.Material3.LargeComponent">
         <item name="cornerSize">26dp</item>
     </style>
 </resources>

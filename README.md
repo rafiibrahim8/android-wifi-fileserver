@@ -1,4 +1,4 @@
-# WiFi File Share (Android)
+# WiFi File Server (Android)
 
 Android app to share files from your phone over local Wi-Fi using a browser.
 

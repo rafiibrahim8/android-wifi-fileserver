@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.server
+package me.ibrahimrafi.wififileserver.server
 
 internal fun buildWebUiTemplate(
     currentPath: String,

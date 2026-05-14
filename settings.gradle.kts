@@ -17,5 +17,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AndroidFileShare"
+rootProject.name = "AndroidFileServer"
 include(":app")

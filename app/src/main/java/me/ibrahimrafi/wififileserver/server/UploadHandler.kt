@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.server
+package me.ibrahimrafi.wififileserver.server
 
 import android.content.Context
 import android.net.Uri
@@ -315,6 +315,6 @@ class UploadHandler(
 
         // Distinctive sidecar suffix so the sweep never touches user files that happen to
         // end in `.part`. Visible to clients during resumable uploads, then renamed away.
-        private const val PART_SUFFIX = ".wifishare.part"
+        private const val PART_SUFFIX = ".wifiserver.part"
     }
 }

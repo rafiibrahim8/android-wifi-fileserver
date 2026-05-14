@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.ui.transfers
+package me.ibrahimrafi.wififileserver.ui.transfers
 
 import android.view.LayoutInflater
 import android.view.View
@@ -10,10 +10,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.progressindicator.LinearProgressIndicator
-import me.ibrahimrafi.wififileshare.R
-import me.ibrahimrafi.wififileshare.model.Direction
-import me.ibrahimrafi.wififileshare.model.TransferItem
-import me.ibrahimrafi.wififileshare.model.TransferStatus
+import me.ibrahimrafi.wififileserver.R
+import me.ibrahimrafi.wififileserver.model.Direction
+import me.ibrahimrafi.wififileserver.model.TransferItem
+import me.ibrahimrafi.wififileserver.model.TransferStatus
 import java.util.Locale
 
 class TransferAdapter(

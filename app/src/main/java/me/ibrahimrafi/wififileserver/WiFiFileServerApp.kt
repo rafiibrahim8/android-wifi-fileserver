@@ -1,10 +1,10 @@
-package me.ibrahimrafi.wififileshare
+package me.ibrahimrafi.wififileserver
 
 import android.app.Application
-import me.ibrahimrafi.wififileshare.model.ServerStateStore
+import me.ibrahimrafi.wififileserver.model.ServerStateStore
 import timber.log.Timber
 
-class WiFiFileShareApp : Application() {
+class WiFiFileServerApp : Application() {
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) {

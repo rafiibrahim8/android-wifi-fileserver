@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.widget
+package me.ibrahimrafi.wififileserver.widget
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -7,10 +7,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import me.ibrahimrafi.wififileshare.MainActivity
-import me.ibrahimrafi.wififileshare.R
-import me.ibrahimrafi.wififileshare.model.ServerStateStore
-import me.ibrahimrafi.wififileshare.server.FileServerService
+import me.ibrahimrafi.wififileserver.MainActivity
+import me.ibrahimrafi.wififileserver.R
+import me.ibrahimrafi.wififileserver.model.ServerStateStore
+import me.ibrahimrafi.wififileserver.server.FileServerService
 
 class ServerWidgetProvider : AppWidgetProvider() {
 
@@ -28,7 +28,7 @@ class ServerWidgetProvider : AppWidgetProvider() {
     }
 
     companion object {
-        const val ACTION_TOGGLE = "me.ibrahimrafi.wififileshare.widget.TOGGLE"
+        const val ACTION_TOGGLE = "me.ibrahimrafi.wififileserver.widget.TOGGLE"
 
         /** Re-render every placed instance of the widget. Safe to call from any thread. */
         fun updateAll(context: Context) {

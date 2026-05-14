@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.model
+package me.ibrahimrafi.wififileserver.model
 
 data class LogEntry(
     val timestampMs: Long,

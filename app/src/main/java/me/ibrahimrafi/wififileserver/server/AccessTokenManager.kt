@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.server
+package me.ibrahimrafi.wififileserver.server
 
 import java.security.SecureRandom
 import java.util.concurrent.ConcurrentHashMap

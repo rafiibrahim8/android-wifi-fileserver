@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.ui.settings
+package me.ibrahimrafi.wififileserver.ui.settings
 
 import android.app.Activity
 import android.net.Uri
@@ -10,10 +10,10 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
-import me.ibrahimrafi.wififileshare.R
-import me.ibrahimrafi.wififileshare.model.ServerConfig
-import me.ibrahimrafi.wififileshare.storage.FolderAccessManager
-import me.ibrahimrafi.wififileshare.storage.ServerPreferences
+import me.ibrahimrafi.wififileserver.R
+import me.ibrahimrafi.wififileserver.model.ServerConfig
+import me.ibrahimrafi.wififileserver.storage.FolderAccessManager
+import me.ibrahimrafi.wififileserver.storage.ServerPreferences
 
 class SettingsPreferencesFragment : PreferenceFragmentCompat() {
     private lateinit var serverPreferences: ServerPreferences

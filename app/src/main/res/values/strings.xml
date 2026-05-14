@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WiFi File Share</string>
+    <string name="app_name">WiFi File Server</string>
 
     <!-- Bottom nav -->
     <string name="home">Home</string>
@@ -35,7 +35,7 @@
     <string name="qr_placeholder">Start server to show QR code</string>
     <string name="copy">Copy</string>
     <string name="url_copied">URL copied to clipboard</string>
-    <string name="clip_label_url">WiFi File Share URL</string>
+    <string name="clip_label_url">WiFi File Server URL</string>
 
     <!-- Folder selection -->
     <string name="folder_not_selected">No folder selected</string>
@@ -43,7 +43,7 @@
     <!-- Notification -->
     <string name="notif_channel_name">File server</string>
     <string name="notif_channel_description">Shows running file server status</string>
-    <string name="notif_title">WiFi File Share — Running</string>
+    <string name="notif_title">WiFi File Server</string>
     <string name="notif_action_stop">Stop Server</string>
     <string name="notif_active_transfers">%1$s · %2$d active transfers</string>
     <string name="notif_no_active_transfers">%1$s · No active transfers</string>
@@ -101,7 +101,7 @@
 
     <!-- Shortcuts -->
     <string name="shortcut_start_server">Start Server</string>
-    <string name="shortcut_start_server_long">Start WiFi File Share Server</string>
+    <string name="shortcut_start_server_long">Start WiFi File Server</string>
 
     <!-- Accessibility content descriptions -->
     <string name="cd_qr_code">Scannable QR code for the server URL</string>

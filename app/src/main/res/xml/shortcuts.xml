@@ -7,8 +7,8 @@
         android:shortcutShortLabel="@string/shortcut_start_server"
         android:shortcutLongLabel="@string/shortcut_start_server_long">
         <intent
-            android:action="me.ibrahimrafi.wififileshare.action.START_SHORTCUT"
-            android:targetClass="me.ibrahimrafi.wififileshare.MainActivity"
-            android:targetPackage="me.ibrahimrafi.wififileshare" />
+            android:action="me.ibrahimrafi.wififileserver.action.START_SHORTCUT"
+            android:targetClass="me.ibrahimrafi.wififileserver.MainActivity"
+            android:targetPackage="me.ibrahimrafi.wififileserver" />
     </shortcut>
 </shortcuts>

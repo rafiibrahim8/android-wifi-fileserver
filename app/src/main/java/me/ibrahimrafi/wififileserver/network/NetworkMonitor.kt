@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.network
+package me.ibrahimrafi.wififileserver.network
 
 import android.content.Context
 import android.net.ConnectivityManager

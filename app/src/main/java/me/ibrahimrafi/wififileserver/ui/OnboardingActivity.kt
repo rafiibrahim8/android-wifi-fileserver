@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.ui
+package me.ibrahimrafi.wififileserver.ui
 
 import android.app.Activity
 import android.content.Intent
@@ -13,9 +13,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.preference.PreferenceManager
 import com.google.android.material.button.MaterialButton
-import me.ibrahimrafi.wififileshare.MainActivity
-import me.ibrahimrafi.wififileshare.R
-import me.ibrahimrafi.wififileshare.storage.FolderAccessManager
+import me.ibrahimrafi.wififileserver.MainActivity
+import me.ibrahimrafi.wififileserver.R
+import me.ibrahimrafi.wififileserver.storage.FolderAccessManager
 
 class OnboardingActivity : AppCompatActivity() {
 

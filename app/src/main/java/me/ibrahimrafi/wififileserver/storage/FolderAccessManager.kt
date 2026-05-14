@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.storage
+package me.ibrahimrafi.wififileserver.storage
 
 import android.content.Context
 import android.content.Intent

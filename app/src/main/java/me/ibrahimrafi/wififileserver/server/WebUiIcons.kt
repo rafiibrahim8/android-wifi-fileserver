@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.server
+package me.ibrahimrafi.wififileserver.server
 
 private val extensionIconMapping = mapOf(
     "3gp" to "video.svg",

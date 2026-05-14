@@ -1,9 +1,9 @@
-package me.ibrahimrafi.wififileshare.ui.transfers
+package me.ibrahimrafi.wififileserver.ui.transfers
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import me.ibrahimrafi.wififileshare.model.ServerStateStore
-import me.ibrahimrafi.wififileshare.model.TransferItem
+import me.ibrahimrafi.wififileserver.model.ServerStateStore
+import me.ibrahimrafi.wififileserver.model.TransferItem
 
 class TransferLogViewModel : ViewModel() {
     val transfers: LiveData<List<TransferItem>> = ServerStateStore.transfers

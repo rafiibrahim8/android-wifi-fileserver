@@ -1,16 +1,16 @@
-package me.ibrahimrafi.wififileshare.server
+package me.ibrahimrafi.wififileserver.server
 
 import android.content.Context
 import android.util.Base64
 import androidx.documentfile.provider.DocumentFile
 import fi.iki.elonen.NanoHTTPD
-import me.ibrahimrafi.wififileshare.model.Direction
-import me.ibrahimrafi.wififileshare.model.LogEntry
-import me.ibrahimrafi.wififileshare.model.ServerConfig
-import me.ibrahimrafi.wififileshare.model.ServerStateStore
-import me.ibrahimrafi.wififileshare.model.TransferItem
-import me.ibrahimrafi.wififileshare.model.TransferStatus
-import me.ibrahimrafi.wififileshare.storage.DocumentTreeCache
+import me.ibrahimrafi.wififileserver.model.Direction
+import me.ibrahimrafi.wififileserver.model.LogEntry
+import me.ibrahimrafi.wififileserver.model.ServerConfig
+import me.ibrahimrafi.wififileserver.model.ServerStateStore
+import me.ibrahimrafi.wififileserver.model.TransferItem
+import me.ibrahimrafi.wififileserver.model.TransferStatus
+import me.ibrahimrafi.wififileserver.storage.DocumentTreeCache
 import java.io.ByteArrayInputStream
 import java.security.SecureRandom
 import java.util.ArrayDeque
@@ -346,7 +346,7 @@ class WiFiFileServer(
 
     private fun unauthorizedResponse(): Response {
         return newFixedLengthResponse(Response.Status.UNAUTHORIZED, MIME_PLAINTEXT, "Unauthorized").also {
-            it.addHeader("WWW-Authenticate", "Basic realm=\"WiFi File Share\"")
+            it.addHeader("WWW-Authenticate", "Basic realm=\"WiFi File Server\"")
         }
     }
 

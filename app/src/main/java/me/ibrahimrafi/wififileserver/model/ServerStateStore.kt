@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.model
+package me.ibrahimrafi.wififileserver.model
 
 import android.content.Context
 import androidx.lifecycle.LiveData

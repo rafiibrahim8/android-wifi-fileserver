@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.model
+package me.ibrahimrafi.wififileserver.model
 
 enum class Direction { DOWNLOAD, UPLOAD }
 

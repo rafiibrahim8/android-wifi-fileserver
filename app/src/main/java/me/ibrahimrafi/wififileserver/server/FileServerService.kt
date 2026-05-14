@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.server
+package me.ibrahimrafi.wififileserver.server
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -19,14 +19,14 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import fi.iki.elonen.NanoHTTPD
-import me.ibrahimrafi.wififileshare.MainActivity
-import me.ibrahimrafi.wififileshare.R
-import me.ibrahimrafi.wififileshare.model.ServerStateStore
-import me.ibrahimrafi.wififileshare.model.TransferStatus
-import me.ibrahimrafi.wififileshare.network.NetworkMonitor
-import me.ibrahimrafi.wififileshare.network.NsdAdvertiser
-import me.ibrahimrafi.wififileshare.storage.ServerPreferences
-import me.ibrahimrafi.wififileshare.widget.ServerWidgetProvider
+import me.ibrahimrafi.wififileserver.MainActivity
+import me.ibrahimrafi.wififileserver.R
+import me.ibrahimrafi.wififileserver.model.ServerStateStore
+import me.ibrahimrafi.wififileserver.model.TransferStatus
+import me.ibrahimrafi.wififileserver.network.NetworkMonitor
+import me.ibrahimrafi.wififileserver.network.NsdAdvertiser
+import me.ibrahimrafi.wififileserver.storage.ServerPreferences
+import me.ibrahimrafi.wififileserver.widget.ServerWidgetProvider
 import timber.log.Timber
 
 class FileServerService : LifecycleService() {
@@ -204,7 +204,7 @@ class FileServerService : LifecycleService() {
     private fun acquireLocks() {
         runCatching {
             val pm = getSystemService(POWER_SERVICE) as PowerManager
-            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "wifishare:server").apply {
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "wifiserver:server").apply {
                 setReferenceCounted(false)
                 acquire()
             }
@@ -218,7 +218,7 @@ class FileServerService : LifecycleService() {
                 @Suppress("DEPRECATION")
                 WifiManager.WIFI_MODE_FULL
             }
-            wifiLock = wm.createWifiLock(mode, "wifishare:server").apply {
+            wifiLock = wm.createWifiLock(mode, "wifiserver:server").apply {
                 setReferenceCounted(false)
                 acquire()
             }
@@ -250,8 +250,8 @@ class FileServerService : LifecycleService() {
         private const val NOTIFICATION_ID = 301
         private const val IDLE_CHECK_INTERVAL_MS = 30_000L
 
-        const val ACTION_START = "me.ibrahimrafi.wififileshare.action.START"
-        const val ACTION_STOP = "me.ibrahimrafi.wififileshare.action.STOP"
+        const val ACTION_START = "me.ibrahimrafi.wififileserver.action.START"
+        const val ACTION_STOP = "me.ibrahimrafi.wififileserver.action.STOP"
 
         fun start(context: Context) {
             val intent = Intent(context, FileServerService::class.java).setAction(ACTION_START)

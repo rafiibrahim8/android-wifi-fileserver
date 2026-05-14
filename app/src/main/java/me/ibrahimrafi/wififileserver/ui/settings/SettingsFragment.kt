@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.ui.settings
+package me.ibrahimrafi.wififileserver.ui.settings
 
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -7,7 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.preference.PreferenceManager
 import android.widget.TextView
-import me.ibrahimrafi.wififileshare.R
+import me.ibrahimrafi.wififileserver.R
 
 class SettingsFragment : Fragment(R.layout.fragment_settings) {
     private val viewModel: SettingsViewModel by viewModels()

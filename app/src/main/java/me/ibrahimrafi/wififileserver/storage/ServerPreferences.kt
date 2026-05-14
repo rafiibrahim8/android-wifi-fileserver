@@ -1,10 +1,10 @@
-package me.ibrahimrafi.wififileshare.storage
+package me.ibrahimrafi.wififileserver.storage
 
 import android.content.Context
 import android.net.Uri
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import me.ibrahimrafi.wififileshare.model.ServerConfig
+import me.ibrahimrafi.wififileserver.model.ServerConfig
 
 class ServerPreferences(context: Context) {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(context)

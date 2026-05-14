@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.storage
+package me.ibrahimrafi.wififileserver.storage
 
 import androidx.documentfile.provider.DocumentFile
 import java.net.URLDecoder

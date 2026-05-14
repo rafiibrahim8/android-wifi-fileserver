@@ -1,4 +1,4 @@
-package me.ibrahimrafi.wififileshare.server
+package me.ibrahimrafi.wififileserver.server
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
