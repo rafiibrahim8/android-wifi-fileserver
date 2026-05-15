@@ -1,5 +1,17 @@
 # WiFi File Server (Android)
 
+<p align="center">
+  <a href="https://ibrahimrafi.me/apps/wifi-file-server/">
+    <img src="graphics/feature-graphic.png" alt="WiFi File Server — share files from your phone over Wi-Fi" width="100%">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://ibrahimrafi.me/apps/wifi-file-server/">Website</a> ·
+  <a href="https://ibrahimrafi.me/apps/wifi-file-server/privacy.html">Privacy</a> ·
+  <a href="https://github.com/rafiibrahim8/android-wifi-fileserver/releases/latest">Latest release</a>
+</p>
+
 Android app to share files from your phone over local Wi-Fi using a browser.
 
 It runs an HTTP server on your device, shows a URL + QR code, and provides a simple web UI for browsing/downloading files.

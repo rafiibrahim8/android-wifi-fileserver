@@ -105,5 +105,11 @@
             android:title="@string/pref_licenses_title"
             android:summary="@string/pref_licenses_summary"
             app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="source"
+            android:title="@string/pref_source_title"
+            android:summary="@string/pref_source_summary"
+            app:iconSpaceReserved="false" />
     </PreferenceCategory>
 </PreferenceScreen>

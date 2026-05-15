@@ -1,0 +1,110 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write   # required to create the GitHub Release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654  # v5.2.0
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e  # v6.1.0
+
+      - name: Restore upload keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::Missing KEYSTORE_B64 secret. Add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          printf "%s" "$KEYSTORE_B64" | base64 -d > upload.jks
+          echo "Keystore restored ($(wc -c < upload.jks) bytes)."
+
+      - name: Write keystore.properties
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          {
+            echo "storeFile=upload.jks"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > keystore.properties
+
+      - name: Verify tag matches versionName
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          TAG_VERSION="${TAG#v}"
+          GRADLE_VERSION=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts || true)
+          if [ -z "$GRADLE_VERSION" ]; then
+            echo "::error::Could not read versionName from app/build.gradle.kts"
+            exit 1
+          fi
+          if [ "$TAG_VERSION" != "$GRADLE_VERSION" ]; then
+            echo "::error::Tag '$TAG' (version '$TAG_VERSION') does not match versionName in app/build.gradle.kts ('$GRADLE_VERSION'). Bump the version in code before tagging."
+            exit 1
+          fi
+          echo "Tag $TAG matches versionName $GRADLE_VERSION. Proceeding."
+
+      - name: Run unit tests
+        run: ./gradlew --no-daemon :app:testDebugUnitTest
+
+      - name: Build signed APK + AAB
+        run: ./gradlew --no-daemon :app:assembleRelease :app:bundleRelease
+
+      - name: Wipe signing material from runner
+        if: always()
+        run: |
+          rm -f keystore.properties upload.jks
+
+      - name: Rename artifacts with version
+        id: artifacts
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-release.apk "out/wifi-file-server-${TAG}.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "out/wifi-file-server-${TAG}.aab"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "apk=out/wifi-file-server-${TAG}.apk" >> "$GITHUB_OUTPUT"
+          echo "aab=out/wifi-file-server-${TAG}.aab" >> "$GITHUB_OUTPUT"
+
+      - name: Generate SHA256SUMS
+        id: sums
+        run: |
+          cd out
+          # Write hashes with bare filenames (no path prefix) so end-users can
+          # verify with: sha256sum -c SHA256SUMS.txt in the same directory.
+          sha256sum *.apk *.aab > SHA256SUMS.txt
+          echo "--- SHA256SUMS.txt ---"
+          cat SHA256SUMS.txt
+          echo "sums=out/SHA256SUMS.txt" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
+        with:
+          tag_name: ${{ steps.artifacts.outputs.tag }}
+          name: ${{ steps.artifacts.outputs.tag }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            ${{ steps.artifacts.outputs.apk }}
+            ${{ steps.artifacts.outputs.aab }}
+            ${{ steps.sums.outputs.sums }}

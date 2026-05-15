@@ -1,0 +1,18 @@
+# Dependabot keeps the SHA-pinned actions in .github/workflows/*.yml up to date.
+# Once a month it opens a PR that bumps any out-of-date action SHA, with a link
+# to the upstream changelog so you can review what changed before merging.
+#
+# Docs: https://docs.github.com/en/code-security/dependabot/working-with-dependabot
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+      include: scope
+    labels:
+      - dependencies
+      - github-actions

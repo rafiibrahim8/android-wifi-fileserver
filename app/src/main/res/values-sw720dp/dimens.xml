@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 10" tablet / large foldable: more aggressive horizontal padding so the
+         hero card stays a sensible width rather than spanning the full screen. -->
+    <dimen name="screen_padding_horizontal">160dp</dimen>
+    <dimen name="home_qr_size">240dp</dimen>
+</resources>

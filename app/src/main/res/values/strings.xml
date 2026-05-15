@@ -69,6 +69,9 @@
     <string name="pref_version_title">Version</string>
     <string name="pref_licenses_title">Open-source licenses</string>
     <string name="pref_licenses_summary">Libraries used by this app</string>
+    <string name="pref_source_title">Source code</string>
+    <string name="pref_source_summary">github.com/rafiibrahim8/android-wifi-fileserver</string>
+    <string name="source_url">https://github.com/rafiibrahim8/android-wifi-fileserver</string>
     <string name="licenses_screen_title">Open-source licenses</string>
     <string name="licenses_intro">This app is built on the open-source libraries below. Tap any entry to open its project page.</string>
     <string name="setup_title">Pick a folder to share</string>

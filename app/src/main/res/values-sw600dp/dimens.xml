@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tablet / foldable inner-screen: pull content away from the edges so
+         cards and the QR don't stretch absurdly wide. -->
+    <dimen name="screen_padding_horizontal">96dp</dimen>
+    <dimen name="home_qr_size">220dp</dimen>
+</resources>

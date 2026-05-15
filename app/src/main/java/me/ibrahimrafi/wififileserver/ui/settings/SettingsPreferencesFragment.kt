@@ -48,6 +48,12 @@ class SettingsPreferencesFragment : PreferenceFragmentCompat() {
             startActivity(Intent(requireContext(), LicensesActivity::class.java))
             true
         }
+        findPreference<Preference>("source")?.setOnPreferenceClickListener {
+            runCatching {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.source_url))))
+            }
+            true
+        }
     }
 
     private fun setupPortValidation() {
