@@ -114,7 +114,8 @@ class FileServerService : LifecycleService() {
         }
 
         server = instance
-        networkMonitor.start()
+        val ip = localIpAddress(this)
+        networkMonitor.start(ip)
         advertiser.start(config.port)
         acquireLocks()
         idleTimeoutMs = config.idleTimeoutMs
@@ -122,7 +123,7 @@ class FileServerService : LifecycleService() {
             notifier.removeCallbacks(idleChecker)
             notifier.postDelayed(idleChecker, IDLE_CHECK_INTERVAL_MS)
         }
-        val url = "http://${localIpAddress(this)}:${config.port}"
+        val url = "http://$ip:${config.port}"
         ServerStateStore.setRunning(true)
         ServerStateStore.setUrl(url)
         ServerWidgetProvider.updateAll(this)
