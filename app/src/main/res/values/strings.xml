@@ -102,7 +102,6 @@
     <string name="transfer_status_completed">Completed</string>
     <string name="transfer_status_failed">Failed</string>
     <string name="transfer_status_cancelled">Cancelled</string>
-    <string name="cancel_upload_failed">Could not cancel upload</string>
     <string name="server_start_failed">Could not start server</string>
 
     <!-- Settings -->

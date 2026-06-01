@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.google.android.material.button.MaterialButton
@@ -32,6 +33,7 @@ import me.ibrahimrafi.wififileserver.storage.ServerPreferences
 class HomeFragment : Fragment(R.layout.fragment_home) {
     private val viewModel: HomeViewModel by viewModels()
     private var pulseAnimator: ObjectAnimator? = null
+    private var qrJob: Job? = null
     private val uiHandler = Handler(Looper.getMainLooper())
     private var isStartPending = false
     private var titleLine2: TextView? = null
@@ -141,7 +143,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         viewModel.url.observe(viewLifecycleOwner) { url ->
             urlText?.text = url
-            viewLifecycleOwner.lifecycleScope.launch {
+            qrJob?.cancel()
+            qrJob = viewLifecycleOwner.lifecycleScope.launch {
                 val bitmap = withContext(Dispatchers.Default) {
                     QrBitmapGenerator.generateQrBitmap(url, 512)
                 }

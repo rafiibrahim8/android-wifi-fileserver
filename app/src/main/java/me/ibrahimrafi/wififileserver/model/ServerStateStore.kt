@@ -132,6 +132,14 @@ object ServerStateStore {
         _logs.value = emptyList()
     }
 
+    @Volatile private var cancelUploadHandler: ((String) -> Boolean)? = null
+
+    fun setCancelUploadHandler(handler: ((String) -> Boolean)?) {
+        cancelUploadHandler = handler
+    }
+
+    fun cancelUpload(path: String): Boolean = cancelUploadHandler?.invoke(path) ?: false
+
     private fun cap(items: List<TransferItem>): List<TransferItem> {
         val keep = ArrayList<TransferItem>(MAX_TRANSFERS)
         keep.addAll(items.asSequence().filter { it.status == TransferStatus.ACTIVE })

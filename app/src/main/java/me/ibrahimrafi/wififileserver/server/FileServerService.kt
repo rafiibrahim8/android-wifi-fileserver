@@ -9,10 +9,8 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.wifi.WifiManager
-import android.os.Binder
 import android.os.Build
 import android.os.Handler
-import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
 import android.widget.Toast
@@ -72,6 +70,9 @@ class FileServerService : LifecycleService() {
             stopSelf()
         }
         createChannel()
+        ServerStateStore.setCancelUploadHandler { path ->
+            server?.cancelUpload(path) ?: false
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -82,36 +83,47 @@ class FileServerService : LifecycleService() {
                 stopSelf()
                 return START_NOT_STICKY
             }
-            ACTION_START, null -> startServerIfNeeded()
+            ACTION_START, null -> {
+                val started = startServerIfNeeded()
+                // Always call startForeground to satisfy the 5-second startForegroundService
+                // window, but if the server didn't actually start (e.g. no folder selected),
+                // remove the notification immediately so the user doesn't see a misleading
+                // "running" state for a service that's stopping.
+                startForeground(NOTIFICATION_ID, buildNotification())
+                if (!started) {
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                    return START_NOT_STICKY
+                }
+                notifier.removeCallbacks(updateNotificationRunnable)
+                notifier.post(updateNotificationRunnable)
+                return START_STICKY
+            }
         }
-        startForeground(NOTIFICATION_ID, buildNotification())
-        notifier.removeCallbacks(updateNotificationRunnable)
-        notifier.post(updateNotificationRunnable)
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
-    private fun startServerIfNeeded() {
-        if (server != null) return
+    private fun startServerIfNeeded(): Boolean {
+        if (server != null) return true
         val config = prefs.getConfig()
         val rootUri = config.rootUri
         if (rootUri == null) {
             Toast.makeText(this, getString(R.string.folder_not_selected), Toast.LENGTH_LONG).show()
             stopSelf()
-            return
+            return false
         }
 
         val instance = runCatching { WiFiFileServer(this, config) }.getOrElse {
             Timber.e(it, "Failed to construct WiFiFileServer")
             Toast.makeText(this, it.message ?: getString(R.string.server_start_failed), Toast.LENGTH_LONG).show()
             stopSelf()
-            return
+            return false
         }
 
         runCatching { instance.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false) }.onFailure {
             Timber.e(it, "WiFiFileServer.start() failed on port ${config.port}")
             Toast.makeText(this, it.message ?: getString(R.string.server_start_failed), Toast.LENGTH_LONG).show()
             stopSelf()
-            return
+            return false
         }
 
         server = instance
@@ -134,6 +146,7 @@ class FileServerService : LifecycleService() {
                 .onSuccess { Timber.i("Swept %d stale .part files", it) }
                 .onFailure { Timber.w(it, "Failed to sweep .part files") }
         }.start()
+        return true
     }
 
     private fun stopServer() {
@@ -154,19 +167,9 @@ class FileServerService : LifecycleService() {
     }
 
     override fun onDestroy() {
+        ServerStateStore.setCancelUploadHandler(null)
         stopServer()
         super.onDestroy()
-    }
-
-    inner class LocalBinder : Binder() {
-        fun cancelUpload(path: String): Boolean = server?.cancelUpload(path) ?: false
-    }
-
-    private val localBinder = LocalBinder()
-
-    override fun onBind(intent: Intent): IBinder? {
-        super.onBind(intent)
-        return localBinder
     }
 
     private fun buildNotification(): Notification {

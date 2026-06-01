@@ -1,13 +1,8 @@
 package me.ibrahimrafi.wififileserver.ui.transfers
 
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.IBinder
 import android.view.View
 import android.widget.TextView
-import me.ibrahimrafi.wififileserver.ui.snack
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -17,24 +12,14 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.chip.Chip
 import me.ibrahimrafi.wififileserver.R
 import me.ibrahimrafi.wififileserver.model.Direction
+import me.ibrahimrafi.wififileserver.model.ServerStateStore
 import me.ibrahimrafi.wififileserver.model.TransferItem
 import me.ibrahimrafi.wififileserver.model.TransferStatus
-import me.ibrahimrafi.wififileserver.server.FileServerService
 
 class TransferLogFragment : Fragment(R.layout.fragment_transfers) {
     private val viewModel: TransferLogViewModel by viewModels()
     private val adapter = TransferAdapter { item -> cancelUpload(item) }
     private var allTransfers: List<TransferItem> = emptyList()
-    private var serverBinder: FileServerService.LocalBinder? = null
-
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-            serverBinder = binder as? FileServerService.LocalBinder
-        }
-        override fun onServiceDisconnected(name: ComponentName?) {
-            serverBinder = null
-        }
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -98,25 +83,7 @@ class TransferLogFragment : Fragment(R.layout.fragment_transfers) {
         }).attachToRecyclerView(recycler)
     }
 
-    override fun onStart() {
-        super.onStart()
-        val intent = Intent(requireContext(), FileServerService::class.java)
-        requireContext().bindService(intent, serviceConnection, 0)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        runCatching { requireContext().unbindService(serviceConnection) }
-        serverBinder = null
-    }
-
     private fun cancelUpload(item: TransferItem) {
-        val binder = serverBinder
-        if (binder == null) {
-            snack(R.string.cancel_upload_failed)
-            return
-        }
-        val ok = binder.cancelUpload(item.relativePath)
-        if (!ok) snack(R.string.cancel_upload_failed)
+        ServerStateStore.cancelUpload(item.relativePath)
     }
 }
