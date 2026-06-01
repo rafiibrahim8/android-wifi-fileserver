@@ -27,7 +27,6 @@ class WiFiFileServer(
         ?: throw IllegalStateException("No root folder selected")
 
     private val cache = DocumentTreeCache(root)
-    private val tokenManager = AccessTokenManager()
     private val directoryHandler = DirectoryHandler(context, cache, config)
     private val downloadHandler = DownloadHandler(context, config.maxSpeedBps)
     private val uploadHandler = UploadHandler(context, root, config.uploadSizeLimitBytes)
@@ -38,6 +37,12 @@ class WiFiFileServer(
 
     /** Best-effort sweep of abandoned upload parts. Safe to call once on startup. */
     fun sweepStalePartials(): Int = uploadHandler.sweepStalePartials()
+
+    fun cancelUpload(path: String): Boolean {
+        val ok = uploadHandler.cancelUpload(path)
+        markCanceledTransfers(path)
+        return ok
+    }
 
     /** Monotonic timestamp of the last request the server handled. */
     private val lastActivityMs = AtomicLong(System.currentTimeMillis())
@@ -86,30 +91,6 @@ class WiFiFileServer(
     private fun route(session: IHTTPSession, ip: String): Response {
         val uri = session.uri.ifBlank { "/" }
         val method = session.method
-
-        if (uri.startsWith("/assets/icons/") && method == Method.GET) {
-            val iconName = uri.removePrefix("/assets/icons/").trim('/')
-            if (iconName.isBlank() || iconName.contains('/') || iconName.contains("..") || !iconName.endsWith(".svg")) {
-                return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
-            }
-            val stream = runCatching { context.assets.open("icons/$iconName") }.getOrNull()
-                ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
-            return try {
-                val size = runCatching { stream.available().toLong() }.getOrDefault(-1L)
-                if (size > 0L) {
-                    newFixedLengthResponse(Response.Status.OK, "image/svg+xml", stream, size).also {
-                        it.addHeader("Cache-Control", "public, max-age=3600")
-                    }
-                } else {
-                    newChunkedResponse(Response.Status.OK, "image/svg+xml", stream).also {
-                        it.addHeader("Cache-Control", "public, max-age=3600")
-                    }
-                }
-            } catch (t: Throwable) {
-                runCatching { stream.close() }
-                throw t
-            }
-        }
 
         if (method == Method.GET && uri == "$internalBase/style.css") {
             val body = webUiStyleCssBytes
@@ -288,29 +269,6 @@ class WiFiFileServer(
             }
             val path = uri.removePrefix("$internalBase/zip").trim('/')
             return directoryHandler.serveZip(path)
-        }
-
-        if (uri.startsWith("$internalBase/dl-token/") && method == Method.GET) {
-            if (config.dropBoxMode) {
-                return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Disabled in drop-box mode")
-            }
-            val token = uri.removePrefix("$internalBase/dl-token/")
-            val path = tokenManager.consume(token)
-                ?: return newFixedLengthResponse(Response.Status.GONE, MIME_PLAINTEXT, "Token expired")
-            val doc = directoryHandler.resolve(path)
-                ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
-            if (!doc.isFile) return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "Not a file")
-            return downloadHandler.serveFile(doc, session)
-        }
-
-        if (uri == "$internalBase/dl-token" && method == Method.POST) {
-            if (config.dropBoxMode) {
-                return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Disabled in drop-box mode")
-            }
-            val path = session.parameters["path"]?.firstOrNull()?.trim('/')
-                ?: return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "Missing path")
-            val token = tokenManager.create(path)
-            return newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, "$internalBase/dl-token/$token")
         }
 
         if (method == Method.GET) {

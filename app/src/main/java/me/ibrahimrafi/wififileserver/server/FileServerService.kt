@@ -9,6 +9,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.wifi.WifiManager
+import android.os.Binder
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -157,8 +158,15 @@ class FileServerService : LifecycleService() {
         super.onDestroy()
     }
 
+    inner class LocalBinder : Binder() {
+        fun cancelUpload(path: String): Boolean = server?.cancelUpload(path) ?: false
+    }
+
+    private val localBinder = LocalBinder()
+
     override fun onBind(intent: Intent): IBinder? {
-        return super.onBind(intent)
+        super.onBind(intent)
+        return localBinder
     }
 
     private fun buildNotification(): Notification {
