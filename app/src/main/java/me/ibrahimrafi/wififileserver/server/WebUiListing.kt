@@ -20,16 +20,16 @@ private val COPY_ICON_SVG = """
 </svg>
 """.trim()
 
-internal fun buildRows(context: Context, currentPath: String, serverBase: String, entries: List<DirectoryEntry>): String {
+internal fun buildRows(context: Context, currentPath: String, entries: List<DirectoryEntry>): String {
     return buildString {
-        buildUpRow(context, currentPath, serverBase)?.let { append(it) }
+        buildUpRow(context, currentPath)?.let { append(it) }
 
         for (entry in entries) {
             val encoded = percentEncodePath(entry.relativePath)
             val icon = iconForEntry(entry)
             val escapedRelativePath = escapeHtml(entry.relativePath)
             if (entry.isDirectory) {
-                val href = "$serverBase/$encoded"
+                val href = "/$encoded"
                 append("<tr class=\"entry-row entry-selectable\" data-selectable=\"1\" data-kind=\"dir\" data-path=\"")
                 append(escapedRelativePath)
                 append("\" data-name=\"")
@@ -49,7 +49,7 @@ internal fun buildRows(context: Context, currentPath: String, serverBase: String
                 append("<td class=\"hideable\"></td>")
                 append("</tr>")
             } else {
-                val downloadUrl = "$serverBase/$encoded"
+                val downloadPath = "/$encoded"
                 val timeIso = isoTime(entry.modified)
                 append("<tr class=\"entry-row entry-selectable\" data-selectable=\"1\" data-kind=\"file\" data-path=\"")
                 append(escapedRelativePath)
@@ -58,7 +58,7 @@ internal fun buildRows(context: Context, currentPath: String, serverBase: String
                 append("\">")
                 append("<td></td>")
                 append("<td class=\"name-cell\"><a class=\"name-link\" href=\"")
-                append(escapeHtml(downloadUrl))
+                append(escapeHtml(downloadPath))
                 append("\" download=\"")
                 append(escapeHtml(entry.name))
                 append("\"><span class=\"name-wrap\">")
@@ -67,8 +67,8 @@ internal fun buildRows(context: Context, currentPath: String, serverBase: String
                 append("<span class=\"name\">")
                 append(escapeHtml(entry.name))
                 append("</span></span></a>")
-                append("<button class=\"copy-btn\" data-url=\"")
-                append(escapeHtml(downloadUrl))
+                append("<button class=\"copy-btn\" data-href=\"")
+                append(escapeHtml(downloadPath))
                 append("\" title=\"Copy link\" aria-label=\"Copy link\">")
                 append(COPY_ICON_SVG)
                 append("</button></td>")
@@ -87,12 +87,12 @@ internal fun buildRows(context: Context, currentPath: String, serverBase: String
     }
 }
 
-private fun buildUpRow(context: Context, currentPath: String, serverBase: String): String? {
+private fun buildUpRow(context: Context, currentPath: String): String? {
     val trimmed = currentPath.trim('/')
     if (trimmed.isBlank()) return null
 
     val parent = trimmed.substringBeforeLast('/', "")
-    val href = if (parent.isBlank()) "$serverBase/" else "$serverBase/${percentEncodePath(parent)}"
+    val href = if (parent.isBlank()) "/" else "/${percentEncodePath(parent)}"
 
     return """
         <tr class="entry-row">
@@ -112,15 +112,15 @@ private fun buildUpRow(context: Context, currentPath: String, serverBase: String
     """.trimIndent()
 }
 
-internal fun buildBreadcrumbTitle(currentPath: String, serverBase: String): String {
+internal fun buildBreadcrumbTitle(currentPath: String): String {
     val segments = currentPath.trim('/').split('/').filter { it.isNotBlank() }
     val out = mutableListOf<String>()
-    out += "<a href=\"${escapeHtml("$serverBase/")}\">/</a>"
+    out += "<a href=\"/\">/</a>"
 
     var accumulated = ""
     for (segment in segments) {
         accumulated = if (accumulated.isBlank()) segment else "$accumulated/$segment"
-        val href = "$serverBase/${percentEncodePath(accumulated)}"
+        val href = "/${percentEncodePath(accumulated)}"
         out += "<a href=\"${escapeHtml(href)}\">${escapeHtml(segment)}</a>"
         out += "<span>/</span>"
     }

@@ -33,8 +33,8 @@ class WiFiFileServer(
     private val uploadHandler = UploadHandler(context, root, config.uploadSizeLimitBytes)
     private val requestWindow = ConcurrentHashMap<String, ArrayDeque<Long>>()
     private val uploadTransferIds = ConcurrentHashMap<String, String>()
-    private val webUiAssetToken = generateWebUiAssetToken()
-    private val webUiAssetBasePath = "/.$webUiAssetToken"
+    private val internalToken = generateInternalToken()
+    private val internalBase = "/.$internalToken"
 
     /** Best-effort sweep of abandoned upload parts. Safe to call once on startup. */
     fun sweepStalePartials(): Int = uploadHandler.sweepStalePartials()
@@ -111,44 +111,44 @@ class WiFiFileServer(
             }
         }
 
-        if (method == Method.GET && uri == "$webUiAssetBasePath/style.css") {
+        if (method == Method.GET && uri == "$internalBase/style.css") {
             val body = webUiStyleCssBytes
                 ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             return serveWebUiAsset(
                 session = session,
                 mimeType = "text/css; charset=utf-8",
                 body = body,
-                etag = "\"$webUiAssetToken-css\"",
+                etag = "\"$internalToken-css\"",
             )
         }
 
-        if (method == Method.GET && uri == "$webUiAssetBasePath/app.js") {
+        if (method == Method.GET && uri == "$internalBase/app.js") {
             val body = webUiAppJsBytes
                 ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             return serveWebUiAsset(
                 session = session,
                 mimeType = "application/javascript; charset=utf-8",
                 body = body,
-                etag = "\"$webUiAssetToken-js\"",
+                etag = "\"$internalToken-js\"",
             )
         }
 
-        if (method == Method.GET && uri == "$webUiAssetBasePath/favicon.ico") {
+        if (method == Method.GET && uri == "$internalBase/favicon.ico") {
             val body = webUiFaviconBytes
                 ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             return serveWebUiAsset(
                 session = session,
                 mimeType = "image/x-icon",
                 body = body,
-                etag = "\"$webUiAssetToken-favicon\"",
+                etag = "\"$internalToken-favicon\"",
             )
         }
 
-        if (uri.startsWith("/upload-cancel/") && (method == Method.POST || method == Method.DELETE)) {
+        if (uri.startsWith("$internalBase/upload-cancel/") && (method == Method.POST || method == Method.DELETE)) {
             if (config.readOnlyFileserver) {
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Read-only mode enabled")
             }
-            val path = uri.removePrefix("/upload-cancel/").trim('/')
+            val path = uri.removePrefix("$internalBase/upload-cancel/").trim('/')
             if (path.isBlank()) {
                 return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "Missing upload path")
             }
@@ -161,11 +161,11 @@ class WiFiFileServer(
             }
         }
 
-        if (uri.startsWith("/mkdir/") && method == Method.POST) {
+        if (uri.startsWith("$internalBase/mkdir/") && method == Method.POST) {
             if (config.readOnlyFileserver) {
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Read-only mode enabled")
             }
-            val path = uri.removePrefix("/mkdir/").trim('/')
+            val path = uri.removePrefix("$internalBase/mkdir/").trim('/')
             if (path.isBlank()) {
                 return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "Missing directory path")
             }
@@ -178,11 +178,11 @@ class WiFiFileServer(
             }
         }
 
-        if (uri.startsWith("/delete/") && (method == Method.POST || method == Method.DELETE)) {
+        if (uri.startsWith("$internalBase/delete/") && (method == Method.POST || method == Method.DELETE)) {
             if (config.readOnlyFileserver) {
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Read-only mode enabled")
             }
-            val path = uri.removePrefix("/delete/").trim('/')
+            val path = uri.removePrefix("$internalBase/delete/").trim('/')
             if (path.isBlank()) {
                 return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "Missing delete path")
             }
@@ -197,7 +197,7 @@ class WiFiFileServer(
             }
         }
 
-        if (uri.startsWith("/upload/") && method == Method.POST) {
+        if (uri.startsWith("$internalBase/upload/") && method == Method.POST) {
             if (config.readOnlyFileserver) {
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Read-only mode enabled")
             }
@@ -205,7 +205,7 @@ class WiFiFileServer(
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Uploads disabled")
             }
             val uploadStartMs = System.currentTimeMillis()
-            val path = uri.removePrefix("/upload/")
+            val path = uri.removePrefix("$internalBase/upload/")
             val fileName = path.substringAfterLast('/')
             val key = "$ip|$path"
             val transferId = uploadTransferIds.getOrPut(key) { UUID.randomUUID().toString() }
@@ -267,7 +267,7 @@ class WiFiFileServer(
             return result
         }
 
-        if (uri == "/zip-multi" && method == Method.POST) {
+        if (uri == "$internalBase/zip-multi" && method == Method.POST) {
             if (config.dropBoxMode) {
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Disabled in drop-box mode")
             }
@@ -279,22 +279,22 @@ class WiFiFileServer(
             return directoryHandler.serveZipOfPaths(paths)
         }
 
-        if (uri.startsWith("/zip") && method == Method.GET) {
+        if ((uri == "$internalBase/zip" || uri.startsWith("$internalBase/zip/")) && method == Method.GET) {
             if (config.dropBoxMode) {
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Disabled in drop-box mode")
             }
             if (!config.allowZipDownload) {
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "ZIP download disabled")
             }
-            val path = uri.removePrefix("/zip").trim('/')
+            val path = uri.removePrefix("$internalBase/zip").trim('/')
             return directoryHandler.serveZip(path)
         }
 
-        if (uri.startsWith("/token/") && method == Method.GET) {
+        if (uri.startsWith("$internalBase/dl-token/") && method == Method.GET) {
             if (config.dropBoxMode) {
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Disabled in drop-box mode")
             }
-            val token = uri.removePrefix("/token/")
+            val token = uri.removePrefix("$internalBase/dl-token/")
             val path = tokenManager.consume(token)
                 ?: return newFixedLengthResponse(Response.Status.GONE, MIME_PLAINTEXT, "Token expired")
             val doc = directoryHandler.resolve(path)
@@ -303,14 +303,14 @@ class WiFiFileServer(
             return downloadHandler.serveFile(doc, session)
         }
 
-        if (uri == "/token" && method == Method.POST) {
+        if (uri == "$internalBase/dl-token" && method == Method.POST) {
             if (config.dropBoxMode) {
                 return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Disabled in drop-box mode")
             }
             val path = session.parameters["path"]?.firstOrNull()?.trim('/')
                 ?: return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "Missing path")
             val token = tokenManager.create(path)
-            return newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, "$serverBase/token/$token")
+            return newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, "$internalBase/dl-token/$token")
         }
 
         if (method == Method.GET) {
@@ -318,7 +318,7 @@ class WiFiFileServer(
             val doc = directoryHandler.resolve(path)
                 ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             return when {
-                doc.isDirectory -> directoryHandler.serveDirectory(path, serverBase, webUiAssetBasePath)
+                doc.isDirectory -> directoryHandler.serveDirectory(path, internalBase)
                 doc.isFile -> {
                     if (config.dropBoxMode) {
                         newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Disabled in drop-box mode")
@@ -406,7 +406,7 @@ class WiFiFileServer(
         return runCatching { context.assets.open(assetPath).use { it.readBytes() } }.getOrNull()
     }
 
-    private fun generateWebUiAssetToken(): String {
+    private fun generateInternalToken(): String {
         val randomBytes = ByteArray(18)
         SecureRandom().nextBytes(randomBytes)
         return Base64.encodeToString(randomBytes, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)

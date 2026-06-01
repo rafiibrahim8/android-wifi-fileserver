@@ -1,6 +1,7 @@
 const config = window.__WFS_CONFIG || {};
 const currentPath = typeof config.currentPath === 'string' ? config.currentPath : '';
 const uploadsEnabled = Boolean(config.uploadsEnabled);
+const internalBase = typeof config.internalBase === 'string' ? config.internalBase : '';
 
 const uploadBtn = document.getElementById('upload-btn');
 const cancelUploadBtn = document.getElementById('cancel-upload');
@@ -36,7 +37,8 @@ document.querySelectorAll('.copy-btn').forEach((btn) => {
   btn.addEventListener('click', async (event) => {
     event.stopPropagation();
     if (deleteMode) return;
-    const text = btn.dataset.url || '';
+    const href = btn.dataset.href || '';
+    const text = href ? window.location.origin + href : '';
     const ok = await copyText(text);
     const iconHtml = btn.innerHTML;
     btn.innerHTML = ok ? 'Link copied' : 'Copy failed';
@@ -46,6 +48,11 @@ document.querySelectorAll('.copy-btn').forEach((btn) => {
       btn.classList.toggle('copy-btn-feedback', false);
     }, 1100);
   });
+});
+
+document.querySelectorAll('.js-zip-link').forEach((link) => {
+  const zipPath = link.dataset.zipPath || '';
+  link.setAttribute('href', internalBase + '/zip' + zipPath);
 });
 
 selectableRows.forEach((row) => {
@@ -77,7 +84,7 @@ if (downloadZipBtn) {
     if (selectedPaths.size === 0) return;
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = '/zip-multi';
+    form.action = internalBase + '/zip-multi';
     form.style.display = 'none';
     for (const path of selectedPaths.keys()) {
       const input = document.createElement('input');
@@ -103,7 +110,7 @@ if (deleteConfirmBtn) {
     deleteConfirmBtn.disabled = true;
     try {
       for (const path of selectedPaths.keys()) {
-        const response = await fetch('/delete/' + encodePath(path), { method: 'POST' });
+        const response = await fetch(internalBase + '/delete/' + encodePath(path), { method: 'POST' });
         if (!response.ok) {
           let detail = '';
           try { detail = await response.text(); } catch (_) {}
@@ -155,7 +162,7 @@ if (createFolderBtn) {
     }
     try {
       const fullPath = (currentPath ? currentPath + '/' : '') + trimmed;
-      const response = await fetch('/mkdir/' + encodePath(fullPath), { method: 'POST' });
+      const response = await fetch(internalBase + '/mkdir/' + encodePath(fullPath), { method: 'POST' });
       if (!response.ok) {
         let detail = '';
         try { detail = await response.text(); } catch (_) {}
@@ -347,7 +354,7 @@ async function uploadFile(file, onProgress) {
 
     let response;
     try {
-      response = await fetch('/upload/' + encodePath(fullPath), {
+      response = await fetch(internalBase + '/upload/' + encodePath(fullPath), {
         method: 'POST',
         headers: {
           'Content-Range': 'bytes ' + offset + '-' + end + '/' + file.size,
@@ -381,7 +388,7 @@ async function uploadFile(file, onProgress) {
 
 async function notifyCancel(path) {
   try {
-    await fetch('/upload-cancel/' + encodePath(path), { method: 'POST' });
+    await fetch(internalBase + '/upload-cancel/' + encodePath(path), { method: 'POST' });
   } catch (_) {
   }
 }

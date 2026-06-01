@@ -3,7 +3,7 @@ package me.ibrahimrafi.wififileserver.server
 internal fun buildWebUiTemplate(
     currentPath: String,
     allowUploads: Boolean,
-    assetBasePath: String,
+    internalBase: String,
     dirsCount: Int,
     filesCount: Int,
     breadcrumb: String,
@@ -52,8 +52,8 @@ internal fun buildWebUiTemplate(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark" />
   <title>Index of /${escapeHtml(currentPath.trim('/'))}</title>
-  <link rel="icon" href="${escapeHtml("$assetBasePath/favicon.ico")}" type="image/x-icon">
-  <link rel="stylesheet" href="${escapeHtml("$assetBasePath/style.css")}">
+  <link rel="icon" href="${escapeHtml("$internalBase/favicon.ico")}" type="image/x-icon">
+  <link rel="stylesheet" href="${escapeHtml("$internalBase/style.css")}">
 </head>
 <body>
   <header>
@@ -112,10 +112,11 @@ internal fun buildWebUiTemplate(
   <script>
     window.__WFS_CONFIG = {
       currentPath: ${jsString(currentPath)},
-      uploadsEnabled: ${if (allowUploads) "true" else "false"}
+      uploadsEnabled: ${if (allowUploads) "true" else "false"},
+      internalBase: ${jsString(internalBase)}
     };
   </script>
-  <script src="${escapeHtml("$assetBasePath/app.js")}"></script>
+  <script src="${escapeHtml("$internalBase/app.js")}"></script>
 </body>
 </html>
 """

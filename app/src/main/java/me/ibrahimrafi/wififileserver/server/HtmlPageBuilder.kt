@@ -6,8 +6,7 @@ object HtmlPageBuilder {
     fun build(
         context: Context,
         currentPath: String,
-        serverBase: String,
-        assetBasePath: String,
+        internalBase: String,
         allowUploads: Boolean,
         allowCreateFolder: Boolean,
         allowDelete: Boolean,
@@ -18,8 +17,8 @@ object HtmlPageBuilder {
         val filesCount = entries.count { !it.isDirectory }
         val dirsCount = entries.count { it.isDirectory }
 
-        val breadcrumb = buildBreadcrumbTitle(currentPath, serverBase)
-        val rows = buildRows(context, currentPath, serverBase, entries)
+        val breadcrumb = buildBreadcrumbTitle(currentPath)
+        val rows = buildRows(context, currentPath, entries)
 
         val uploadControls = if (allowUploads) {
             """
@@ -65,7 +64,7 @@ object HtmlPageBuilder {
 
         val zipSection = if (allowZipDownload) {
             val zipPath = if (currentPath.isBlank()) "" else "/${percentEncodePath(currentPath)}"
-            "<a class=\"btn\" href=\"$serverBase/zip$zipPath\">Download ZIP</a>"
+            "<a class=\"btn js-zip-link\" data-zip-path=\"${escapeHtml(zipPath)}\" role=\"button\">Download ZIP</a>"
         } else {
             ""
         }
@@ -79,7 +78,7 @@ object HtmlPageBuilder {
         return buildWebUiTemplate(
             currentPath = currentPath,
             allowUploads = allowUploads,
-            assetBasePath = assetBasePath,
+            internalBase = internalBase,
             dirsCount = dirsCount,
             filesCount = filesCount,
             breadcrumb = breadcrumb,
