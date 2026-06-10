@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://ibrahimrafi.me/apps/wifi-file-server/">Website</a> ·
-  <a href="https://ibrahimrafi.me/apps/wifi-file-server/privacy.html">Privacy</a> ·
+  <a href="https://ibrahimrafi.me/apps/wifi-file-server/privacy/">Privacy</a> ·
   <a href="https://github.com/rafiibrahim8/android-wifi-fileserver/releases/latest">Latest release</a>
 </p>
 
